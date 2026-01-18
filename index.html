@@ -150,19 +150,31 @@
 
             <!-- Monthly Calendar View -->
             <div class="glass-card rounded-2xl shadow-lg overflow-hidden mt-6">
-                 <div class="bg-gray-50 border-b border-gray-100 p-4">
+                 <div class="bg-gray-50 border-b border-gray-100 p-4 flex justify-between items-center flex-wrap gap-2">
                     <h2 class="font-bold text-gray-700"><i class="fas fa-table mr-2 text-emerald-500"></i>Monatsübersicht</h2>
+                    
+                    <!-- Month Navigation -->
+                    <div class="flex items-center gap-2 bg-white rounded-lg border border-gray-200 p-1">
+                        <button onclick="changeMonth(-1)" class="w-8 h-8 flex items-center justify-center hover:bg-gray-100 rounded text-gray-600 transition">
+                            <i class="fas fa-chevron-left"></i>
+                        </button>
+                        <span id="month-display" class="text-sm font-semibold w-32 text-center text-gray-700 select-none">Lade...</span>
+                        <button onclick="changeMonth(1)" class="w-8 h-8 flex items-center justify-center hover:bg-gray-100 rounded text-gray-600 transition">
+                            <i class="fas fa-chevron-right"></i>
+                        </button>
+                    </div>
                 </div>
                 <div class="overflow-x-auto">
-                    <table class="w-full text-sm text-left text-gray-500">
+                    <!-- Adjusted table for mobile responsiveness -->
+                    <table class="w-full text-xs md:text-sm text-left text-gray-500">
                         <thead class="text-xs text-gray-700 uppercase bg-gray-50">
                             <tr>
-                                <th scope="col" class="px-4 py-3">Tag</th>
-                                <th scope="col" class="px-4 py-3">Fajr</th>
-                                <th scope="col" class="px-4 py-3">Dhuhr</th>
-                                <th scope="col" class="px-4 py-3">Asr</th>
-                                <th scope="col" class="px-4 py-3">Maghrib</th>
-                                <th scope="col" class="px-4 py-3">Isha</th>
+                                <th scope="col" class="px-2 py-3 md:px-4">Tag</th>
+                                <th scope="col" class="px-1 py-3 md:px-4 text-center">Fajr</th>
+                                <th scope="col" class="px-1 py-3 md:px-4 text-center">Dhuhr</th>
+                                <th scope="col" class="px-1 py-3 md:px-4 text-center">Asr</th>
+                                <th scope="col" class="px-1 py-3 md:px-4 text-center">Maghrib</th>
+                                <th scope="col" class="px-1 py-3 md:px-4 text-center">Isha</th>
                             </tr>
                         </thead>
                         <tbody id="month-table-body">
@@ -211,12 +223,14 @@
             method: DEFAULT_METHOD,
             timings: null,
             nextPrayer: null,
-            currentPrayer: null // Neu: Für die Hervorhebung
+            currentPrayer: null, // Neu: Für die Hervorhebung
+            viewDate: new Date() // Neu: Für die Kalender-Navigation
         };
 
         // --- Initialization ---
         document.addEventListener('DOMContentLoaded', () => {
             updateDateDisplay();
+            updateMonthDisplay(); // Initiale Anzeige für Monatsnav
             loadSettings();
             
             // Set up search enter key
@@ -284,6 +298,28 @@
             if (todayEl) {
                 todayEl.innerText = `(${shortDate})`;
             }
+        }
+
+        // --- Month Navigation Logic ---
+
+        function changeMonth(offset) {
+            // Ändere das Datum im State
+            const currentView = appState.viewDate;
+            currentView.setMonth(currentView.getMonth() + offset);
+            appState.viewDate = new Date(currentView); // Trigger update mit neuem Objekt
+
+            updateMonthDisplay();
+            
+            // Lade Daten für den neuen Monat
+            if (appState.location) {
+                document.getElementById('month-table-body').innerHTML = '<tr><td colspan="6" class="text-center py-4"><div class="loader mx-auto"></div></td></tr>';
+                fetchPrayerData();
+            }
+        }
+
+        function updateMonthDisplay() {
+            const options = { month: 'long', year: 'numeric' };
+            document.getElementById('month-display').innerText = appState.viewDate.toLocaleDateString('de-DE', options);
         }
 
         // --- Location Logic ---
@@ -399,9 +435,10 @@
         async function fetchPrayerData() {
             if (!appState.location) return;
 
-            const date = new Date();
-            const year = date.getFullYear();
-            const month = date.getMonth() + 1;
+            // Nutze appState.viewDate statt new Date() für die Abfrage
+            const viewDate = appState.viewDate;
+            const year = viewDate.getFullYear();
+            const month = viewDate.getMonth() + 1;
             
             // Use the selected method
             const method = appState.method || DEFAULT_METHOD;
@@ -422,19 +459,37 @@
         }
 
         function processAPIData(data) {
-            const todayDate = new Date().getDate();
-            const todayData = data.find(d => parseInt(d.date.gregorian.day) === todayDate);
+            const now = new Date();
+            const currentMonth = now.getMonth() + 1;
+            const currentYear = now.getFullYear();
 
-            if (todayData) {
-                appState.timings = todayData.timings;
+            // Check ob die geladenen Daten dem aktuellen realen Monat entsprechen
+            // API gibt Datum im gregorian object zurück
+            if (data.length > 0) {
+                const dataMonth = parseInt(data[0].date.gregorian.month.number);
+                const dataYear = parseInt(data[0].date.gregorian.year);
                 
-                const hijri = todayData.date.hijri;
-                document.getElementById('hijri-date').innerText = `${hijri.day} ${hijri.month.en} ${hijri.year}`;
+                const isCurrentMonth = (dataMonth === currentMonth && dataYear === currentYear);
 
-                updatePrayerStates(appState.timings); // Umbenannt von determineNextPrayer
-                renderTodayList(appState.timings);
-                renderMonthTable(data);
+                // NUR wenn wir im aktuellen Monat sind, aktualisieren wir die "Heute" Ansicht
+                if (isCurrentMonth) {
+                    const todayDate = now.getDate();
+                    const todayData = data.find(d => parseInt(d.date.gregorian.day) === todayDate);
+
+                    if (todayData) {
+                        appState.timings = todayData.timings;
+                        
+                        const hijri = todayData.date.hijri;
+                        document.getElementById('hijri-date').innerText = `${hijri.day} ${hijri.month.en} ${hijri.year}`;
+
+                        updatePrayerStates(appState.timings); 
+                        renderTodayList(appState.timings);
+                    }
+                }
             }
+            
+            // Die Kalendertabelle wird IMMER aktualisiert mit den geladenen Daten
+            renderMonthTable(data);
         }
 
         function parseTime(timeStr) {
@@ -505,6 +560,16 @@
             const diff = appState.nextPrayer.obj - now;
 
             if (diff <= 0) {
+                // Wenn wir den Monat gewechselt haben und der Countdown abläuft,
+                // wollen wir eigentlich die "echten" Daten neu laden.
+                // Da fetchPrayerData nun viewDate nutzt, setzen wir viewDate kurz zurück oder laden separat.
+                // Einfacher Hack: Wir setzen viewDate auf Heute zurück, damit der User sieht dass ein neuer Tag ist.
+                // Oder wir lassen es so, dann aktualisiert sich nur der Countdown falls möglich.
+                // Beste UX: Seite neu laden oder current data neu fetchen.
+                
+                // Wir resetten hier viewDate auf current date um sicherzugehen dass "Heute" aktualisiert wird
+                appState.viewDate = new Date();
+                updateMonthDisplay();
                 fetchPrayerData(); 
                 return;
             }
@@ -553,21 +618,33 @@
             const tbody = document.getElementById('month-table-body');
             tbody.innerHTML = '';
             
-            const todayDay = new Date().getDate();
+            const now = new Date();
+            const currentDay = now.getDate();
+            const currentMonth = now.getMonth() + 1;
+            const currentYear = now.getFullYear();
+
+            // Datenmonat ermitteln für Highlighting
+            const dataMonth = parseInt(data[0].date.gregorian.month.number);
+            const dataYear = parseInt(data[0].date.gregorian.year);
+            const isCurrentMonthView = (dataMonth === currentMonth && dataYear === currentYear);
 
             data.forEach(day => {
                 const t = day.timings;
                 const d = day.date.gregorian;
-                const isToday = parseInt(d.day) === todayDay;
+                const dayNum = parseInt(d.day);
+                
+                // Highlight nur wenn es wirklich heute ist (Tag + Monat + Jahr stimmen)
+                const isToday = isCurrentMonthView && (dayNum === currentDay);
 
+                // Responsive padding and hidden month name on mobile
                 const row = `
-                    <tr class="border-b ${isToday ? 'bg-emerald-50' : ''}">
-                        <td class="px-4 py-3 font-medium text-gray-900 whitespace-nowrap">${d.day}. ${d.month.en.slice(0,3)}</td>
-                        <td class="px-4 py-3">${parseTime(t.Fajr)}</td>
-                        <td class="px-4 py-3">${parseTime(t.Dhuhr)}</td>
-                        <td class="px-4 py-3">${parseTime(t.Asr)}</td>
-                        <td class="px-4 py-3">${parseTime(t.Maghrib)}</td>
-                        <td class="px-4 py-3">${parseTime(t.Isha)}</td>
+                    <tr class="border-b ${isToday ? 'bg-emerald-100 font-semibold' : 'hover:bg-gray-50'}">
+                        <td class="px-2 py-2 md:px-4 md:py-3 whitespace-nowrap">${d.day}. <span class="hidden sm:inline">${d.month.en.slice(0,3)}</span></td>
+                        <td class="px-1 py-2 md:px-4 md:py-3 text-center">${parseTime(t.Fajr)}</td>
+                        <td class="px-1 py-2 md:px-4 md:py-3 text-center">${parseTime(t.Dhuhr)}</td>
+                        <td class="px-1 py-2 md:px-4 md:py-3 text-center">${parseTime(t.Asr)}</td>
+                        <td class="px-1 py-2 md:px-4 md:py-3 text-center">${parseTime(t.Maghrib)}</td>
+                        <td class="px-1 py-2 md:px-4 md:py-3 text-center">${parseTime(t.Isha)}</td>
                     </tr>
                 `;
                 tbody.innerHTML += row;
