@@ -1,5 +1,4 @@
-// Prayer Times Widget
-// Generated Code
+// Gebetsteiten.live Widget
 
 // --- STANDARD KONFIGURATION ---
 const DEFAULT = {
@@ -34,58 +33,21 @@ const COLORS = {
 let THEME_COLOR_HEX = "#10b981";
 
 // --- PARAMETER LOGIC ---
-// Unterstützte Formate: "Stadt", "Stadt, Farbe", "Stadt, Methode", "Stadt, Farbe, Methode"
-// Beispiele: "Berlin", "Berlin, Pink", "Berlin, 5", "Berlin, Pink, 5"
-/*
- * BERECHNUNGSMETHODEN (API CODES)
- * -------------------------------
- * Verwende diese Nummern für den Parameter 'method' in der Konfiguration
- * oder als drittes Argument im Widget-Parameter (z.B. "Berlin, Grün, 3").
- *
- * 0  - Shia Ithna-Ashari
- * 1  - University of Islamic Sciences, Karachi
- * 2  - Islamic Society of North America (ISNA)
- * 3  - Muslim World League (MWL) -> Standard für Europa/Deutschland
- * 4  - Umm Al-Qura University, Makkah
- * 5  - Egyptian General Authority of Survey
- * 7  - Institute of Geophysics, University of Tehran
- * 8  - Gulf Region
- * 9  - Kuwait
- * 10  - Qatar
- * 11  - Majlis Ugama Islam Singapura, Singapore
- * 12  - Union Organization islamic de France (UOIF)
- * 13  - Diyanet İşleri Başkanlığı, Turkey -> Standard für Türkische Community
- * 14  - Spiritual Administration of Muslims of Russia
- * 15  - Moonsighting Committee Worldwide
- */
-
 let cityParam = DEFAULT.city;
 
 if (args.widgetParameter) {
   const params = args.widgetParameter.split(",");
   
-  // 1. Stadt (immer an erster Stelle)
   if (params[0] && params[0].trim() !== "") {
     cityParam = params[0].trim();
   }
   
-  // Weitere Parameter flexibel parsen (Farbe oder Methode)
-  for (let i = 1; i < params.length; i++) {
-    let p = params[i].trim();
-    if (p === "") continue;
-    
-    // Check: Ist es eine Zahl? -> Methode ID
-    if (!isNaN(p)) {
-      DEFAULT.method = parseInt(p);
-      continue;
-    }
-    
-    // Check: Ist es eine Farbe?
-    let lowerC = p.toLowerCase();
-    if (COLORS[lowerC]) {
-      THEME_COLOR_HEX = COLORS[lowerC];
-    } else if (lowerC.startsWith("#")) {
-      THEME_COLOR_HEX = lowerC;
+  if (params.length > 1) {
+    const colorName = params[1].trim().toLowerCase();
+    if (COLORS[colorName]) {
+      THEME_COLOR_HEX = COLORS[colorName];
+    } else if (colorName.startsWith("#")) {
+       THEME_COLOR_HEX = colorName;
     }
   }
 }
