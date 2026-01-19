@@ -63,7 +63,7 @@
                 <div class="flex items-center gap-2">
                     <button onclick="toggleSettings()" class="bg-slate-800 hover:bg-slate-700 py-2 px-3 rounded-full transition flex items-center shadow-lg border border-slate-700">
                         <i class="fas fa-map-marker-alt text-emerald-400"></i> 
-                        <span id="location-name" class="ml-2 text-sm font-medium hidden sm:inline">Berlin</span>
+                        <span id="location-name" class="ml-2 text-sm font-medium">Berlin</span>
                     </button>
                     <button onclick="toggleSettings()" class="bg-slate-800 hover:bg-slate-700 p-2 rounded-full transition w-10 h-10 flex items-center justify-center shadow-lg border border-slate-700" title="Einstellungen">
                         <i class="fas fa-cog text-slate-300 hover:text-white transition-colors"></i>
@@ -216,7 +216,8 @@
             Isha: "Isha (Nacht)"
         };
 
-        const TRACKED_PRAYERS = ['Fajr', 'Dhuhr', 'Asr', 'Maghrib', 'Isha'];
+        // Sunrise hinzugefügt, damit der Countdown das Ende von Fajr anzeigt und die App dann aktualisiert
+        const TRACKED_PRAYERS = ['Fajr', 'Sunrise', 'Dhuhr', 'Asr', 'Maghrib', 'Isha'];
 
         let appState = {
             location: null,
@@ -550,6 +551,13 @@
                     current = event; // Merke das letzte Event, das <= jetzt ist
                 }
             }
+
+            // SONDERFALL: Nach Sonnenaufgang direkt auf Dhuhr switchen
+            // Da Fajr nur bis Sonnenaufgang geht, springt das Highlight danach direkt auf das nächste Pflichtgebet (Dhuhr)
+            if (current === 'Sunrise') {
+                current = 'Dhuhr';
+            }
+
             appState.currentPrayer = current;
         }
 
