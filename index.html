@@ -2,9 +2,39 @@
 <html lang="de">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gebetszeiten Deutschland & Weltweit</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     
+    <!-- SEO Meta Tags -->
+    <title>Gebetszeiten Deutschland & Weltweit - Kostenlos & Präzise</title>
+    <meta name="description" content="Aktuelle islamische Gebetszeiten für Berlin, Deutschland und weltweit. Genaue Zeiten für Fajr, Dhuhr, Asr, Maghrib und Isha mit automatischem Standort, Hijri-Datum und Countdown.">
+    <meta name="keywords" content="Gebetszeiten, Namaz Zeit, Salah, Muslimische Gebetszeiten, Islam, Gebetskalender, Berlin, Deutschland, Fajr, Maghrib, Isha, Moschee, Gebet">
+    <meta name="author" content="Gebetszeiten App">
+    <meta name="robots" content="index, follow">
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://gebetszeiten.live/">
+    <meta property="og:title" content="Gebetszeiten Deutschland & Weltweit">
+    <meta property="og:description" content="Präzise islamische Gebetszeiten für deinen Standort. Mit Countdown, Monatsübersicht und Hijri-Datum.">
+    
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:title" content="Gebetszeiten Deutschland & Weltweit">
+    <meta property="twitter:description" content="Präzise islamische Gebetszeiten für deinen Standort. Mit Countdown, Monatsübersicht und Hijri-Datum.">
+
+    <!-- PWA / Mobile Optimization -->
+    <meta name="theme-color" content="#0f172a"> <!-- Dunkles Blau passend zum Header -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Gebetszeiten">
+    
+    <!-- Inline Manifest for PWA (Data URI) -->
+    <link rel="manifest" href="data:application/manifest+json;base64,eyJuYW1lIjoiR2ViZXRzemVpdGVuIEFwcCIsInNob3J0X25hbWUiOiJHZWJldHN6ZWl0ZW4iLCJzdGFydF91cmwiOiIuLyIsImRpc3BsYXkiOiJzdGFuZGFsb25lIiwiYmFja2dyb3VuZF9jb2xvciI6IiNmM2Y0ZjYiLCJ0aGVtZV9jb2xvciI6IiMwZjE3MmEiLCJpY29ucyI6W3sic3JjIjoiaHR0cHM6Ly9jZG4tanRpZmYuYWxYcGxvcmVyLm5ldC9hc3NldHMvaWNvbnMvcHJheWVyLWFwcC1pY29uLTE5Mi5wbmciLCJzaXplcyI6IjE5MngxOTIiLCJ0eXBlIjoiaW1hZ2UvcG5nIn0seyJzcmMiOiJodHRwczovL2Nkbi1qdGlmZi5hbFhwbG9yZXIubmV0L2Fzc2V0cy9pY29ucy9wcmF5ZXItYXBwLWljb24tNTEyLnBuZyIsInNpemVzIjoiNTEyeDUxMiIsInR5cGUiOiJpbWFnZS9wbmcifV19">
+    
+    <!-- Favicon (using emoji as fallback) -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🕌</text></svg>">
+    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 fill=%22%230f172a%22/><text x=%2250%25%22 y=%2250%25%22 dominant-baseline=%22central%22 text-anchor=%22middle%22 font-size=%2270%22>🕌</text></svg>">
+
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     
@@ -18,6 +48,8 @@
         body {
             font-family: 'Inter', sans-serif;
             background-color: #f3f4f6;
+            /* Prevent pull-to-refresh on mobile which looks weird in standalone mode */
+            overscroll-behavior-y: none;
         }
         .glass-card {
             background: rgba(255, 255, 255, 0.95);
