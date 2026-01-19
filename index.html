@@ -160,14 +160,26 @@
 
                 <!-- Adhan Settings -->
                 <div class="mb-6">
-                    <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Adhan Erinnerung</label>
+                    <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Adhan & Erinnerungen</label>
                     
-                    <!-- Main Toggle -->
+                    <!-- Main Audio Toggle -->
                     <div class="flex items-center justify-between mb-3">
                         <span class="text-sm text-gray-700">Audio abspielen</span>
                         <label class="relative inline-flex items-center cursor-pointer">
                             <input type="checkbox" id="adhan-toggle" class="sr-only peer" onchange="saveAdhanSettings()">
                             <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500"></div>
+                        </label>
+                    </div>
+
+                    <!-- Notification Toggle (NEU) -->
+                    <div class="flex items-center justify-between mb-3">
+                        <div class="flex flex-col">
+                            <span class="text-sm text-gray-700">Desktop Benachrichtigung</span>
+                            <span class="text-[10px] text-gray-400">System-Popup anzeigen</span>
+                        </div>
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" id="notification-toggle" class="sr-only peer" onchange="toggleNotifications()">
+                            <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-500"></div>
                         </label>
                     </div>
 
@@ -328,6 +340,7 @@
             adhanEnabled: false,
             adhanOffset: 10,
             fajrAdhanEnabled: false, // New: Special Fajr toggle
+            notificationsEnabled: false, // NEU: Notifications State
             adhanPlayedFor: null // Stores the time/ID of the prayer we just played for
         };
 
@@ -373,10 +386,20 @@
                 appState.adhanEnabled = parsed.enabled;
                 appState.adhanOffset = parsed.offset;
                 appState.fajrAdhanEnabled = parsed.fajrEnabled || false;
+                appState.notificationsEnabled = parsed.notificationsEnabled || false;
             }
             document.getElementById('adhan-toggle').checked = appState.adhanEnabled;
             document.getElementById('adhan-offset-input').value = appState.adhanOffset;
             document.getElementById('fajr-adhan-toggle').checked = appState.fajrAdhanEnabled;
+            
+            // Checkbox Status setzen (nur wenn Permission auch wirklich da ist oder wir sie wollen)
+            if (Notification.permission === 'granted' && appState.notificationsEnabled) {
+                document.getElementById('notification-toggle').checked = true;
+            } else {
+                // Falls Permission entzogen wurde, aber State true war, resetten
+                appState.notificationsEnabled = false;
+                document.getElementById('notification-toggle').checked = false;
+            }
 
             // Show/Hide player based on setting
             updatePlayerVisibility();
@@ -402,10 +425,42 @@
         
         // --- Adhan Logic ---
         
+        function toggleNotifications() {
+            const toggle = document.getElementById('notification-toggle');
+            
+            if (toggle.checked) {
+                // Request Permission
+                if (!("Notification" in window)) {
+                    alert("Dieser Browser unterstützt keine Desktop-Benachrichtigungen.");
+                    toggle.checked = false;
+                    return;
+                }
+
+                Notification.requestPermission().then(permission => {
+                    if (permission === "granted") {
+                        appState.notificationsEnabled = true;
+                        new Notification("Benachrichtigungen aktiviert", {
+                            body: "Du erhältst nun Erinnerungen zu den Gebetszeiten.",
+                            icon: "https://cdn-icons-png.flaticon.com/512/5968/5968282.png" // Beispiel Icon oder leer lassen
+                        });
+                        saveAdhanSettings();
+                    } else {
+                        appState.notificationsEnabled = false;
+                        toggle.checked = false;
+                        alert("Berechtigung verweigert. Bitte in den Browsereinstellungen aktivieren.");
+                    }
+                });
+            } else {
+                appState.notificationsEnabled = false;
+                saveAdhanSettings();
+            }
+        }
+
         function saveAdhanSettings() {
             const enabled = document.getElementById('adhan-toggle').checked;
             const offset = parseInt(document.getElementById('adhan-offset-input').value) || 10;
             const fajrEnabled = document.getElementById('fajr-adhan-toggle').checked;
+            // notification state is managed in toggleNotifications but saved here too for persistence
             
             appState.adhanEnabled = enabled;
             appState.adhanOffset = offset;
@@ -414,7 +469,8 @@
             localStorage.setItem('prayerAppAdhan', JSON.stringify({
                 enabled: enabled,
                 offset: offset,
-                fajrEnabled: fajrEnabled
+                fajrEnabled: fajrEnabled,
+                notificationsEnabled: appState.notificationsEnabled
             }));
 
             // Toggle UI player
@@ -789,9 +845,11 @@
             document.getElementById('countdown').innerText = 
                 `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
                 
-            // --- Check for Adhan Trigger ---
-            // Only if enabled AND next prayer is NOT sunrise
-            if (appState.adhanEnabled && appState.nextPrayer && appState.nextPrayer.name !== 'Sunrise') {
+            // --- Check for Adhan Trigger & Notification ---
+            // Only if (Audio OR Notification) enabled AND next prayer is NOT sunrise
+            const isTriggerEnabled = appState.adhanEnabled || appState.notificationsEnabled;
+
+            if (isTriggerEnabled && appState.nextPrayer && appState.nextPrayer.name !== 'Sunrise') {
                 
                 // Calculate trigger time: Prayer Time - Offset Minutes
                 const prayerTimeMs = appState.nextPrayer.obj.getTime();
@@ -808,20 +866,36 @@
                 
                 if (nowMs >= triggerTimeMs && nowMs < triggerTimeMs + 2000) {
                     if (appState.adhanPlayedFor !== prayerId) {
-                        const audio = document.getElementById('adhan-audio');
                         
-                        // Dynamically set source based on prayer and settings
-                        let src = "https://cdn.aladhan.com/audio/adhans/a11-mansour-al-zahrani.mp3"; // Default
-                        
-                        if (appState.nextPrayer.name === 'Fajr' && appState.fajrAdhanEnabled) {
-                            src = "https://cdn.aladhan.com/audio/adhans/fajr/f2-mansour-al-zahrani.mp3";
+                        // 1. Audio Playback
+                        if (appState.adhanEnabled) {
+                            const audio = document.getElementById('adhan-audio');
+                            
+                            // Dynamically set source based on prayer and settings
+                            let src = "https://cdn.aladhan.com/audio/adhans/a11-mansour-al-zahrani.mp3"; // Default
+                            
+                            if (appState.nextPrayer.name === 'Fajr' && appState.fajrAdhanEnabled) {
+                                src = "https://cdn.aladhan.com/audio/adhans/fajr/f2-mansour-al-zahrani.mp3";
+                            }
+                            
+                            audio.src = src;
+                            audio.play().catch(e => {
+                                console.log("Autoplay blocked or error:", e);
+                            });
                         }
-                        
-                        audio.src = src;
-                        audio.play().catch(e => {
-                            console.log("Autoplay blocked or error:", e);
-                            // Maybe show a small toast?
-                        });
+
+                        // 2. System Notification
+                        if (appState.notificationsEnabled && Notification.permission === "granted") {
+                            const prayerName = PRAYER_NAMES[appState.nextPrayer.name];
+                            const timeStr = parseTime(appState.timings[appState.nextPrayer.name]);
+                            
+                            new Notification(`Gebetszeit: ${prayerName}`, {
+                                body: `Es ist bald Zeit für das Gebet (${timeStr}).`,
+                                icon: "https://img.icons8.com/color/96/mosque.png", // Free icon for context
+                                requireInteraction: true // Bleibt sichtbar bis Interaktion (auf manchen Systemen)
+                            });
+                        }
+
                         appState.adhanPlayedFor = prayerId;
                     }
                 }
