@@ -3,20 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    
+
     <!-- SEO Meta Tags -->
     <title>Gebetszeiten Deutschland & Weltweit - Kostenlos & Präzise</title>
     <meta name="description" content="Aktuelle islamische Gebetszeiten für Berlin, Deutschland und weltweit. Genaue Zeiten für Fajr, Dhuhr, Asr, Maghrib und Isha mit automatischem Standort, Hijri-Datum und Countdown.">
     <meta name="keywords" content="Gebetszeiten, Namaz Zeit, Salah, Muslimische Gebetszeiten, Islam, Gebetskalender, Berlin, Deutschland, Fajr, Maghrib, Isha, Moschee, Gebet">
     <meta name="author" content="Gebetszeiten App">
     <meta name="robots" content="index, follow">
-    
+
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://gebetszeiten.live/">
     <meta property="og:title" content="Gebetszeiten Deutschland & Weltweit">
     <meta property="og:description" content="Präzise islamische Gebetszeiten für deinen Standort. Mit Countdown, Monatsübersicht und Hijri-Datum.">
-    
+
     <!-- Twitter -->
     <meta property="twitter:card" content="summary_large_image">
     <meta property="twitter:title" content="Gebetszeiten Deutschland & Weltweit">
@@ -27,24 +27,53 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Gebetszeiten">
-    
+
     <!-- Inline Manifest for PWA (Data URI) -->
     <link rel="manifest" href="data:application/manifest+json;base64,eyJuYW1lIjoiR2ViZXRzemVpdGVuIEFwcCIsInNob3J0X25hbWUiOiJHZWJldHN6ZWl0ZW4iLCJzdGFydF91cmwiOiIuLyIsImRpc3BsYXkiOiJzdGFuZGFsb25lIiwiYmFja2dyb3VuZF9jb2xvciI6IiNmM2Y0ZjYiLCJ0aGVtZV9jb2xvciI6IiMwZjE3MmEiLCJpY29ucyI6W3sic3JjIjoiaHR0cHM6Ly9jZG4tanRpZmYuYWxYcGxvcmVyLm5ldC9hc3NldHMvaWNvbnMvcHJheWVyLWFwcC1pY29uLTE5Mi5wbmciLCJzaXplcyI6IjE5MngxOTIiLCJ0eXBlIjoiaW1hZ2UvcG5nIn0seyJzcmMiOiJodHRwczovL2Nkbi1qdGlmZi5hbFhwbG9yZXIubmV0L2Fzc2V0cy9pY29ucy9wcmF5ZXItYXBwLWljb24tNTEyLnBuZyIsInNpemVzIjoiNTEyeDUxMiIsInR5cGUiOiJpbWFnZS9wbmcifV19">
-    
+
     <!-- Favicon (using emoji as fallback) -->
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🕌</text></svg>">
     <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 fill=%22%230f172a%22/><text x=%2250%25%22 y=%2250%25%22 dominant-baseline=%22central%22 text-anchor=%22middle%22 font-size=%2270%22>🕌</text></svg>">
 
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            50: 'var(--color-primary-50)',
+                            100: 'var(--color-primary-100)',
+                            200: 'var(--color-primary-200)',
+                            400: 'var(--color-primary-400)',
+                            500: 'var(--color-primary-500)',
+                            600: 'var(--color-primary-600)',
+                            700: 'var(--color-primary-700)',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
     <!-- Font Awesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
+
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
     <style>
+        :root {
+            --color-primary-50: #ecfdf5;
+            --color-primary-100: #d1fae5;
+            --color-primary-200: #a7f3d0;
+            --color-primary-400: #34d399;
+            --color-primary-500: #10b981;
+            --color-primary-600: #059669;
+            --color-primary-700: #047857;
+            --color-primary-shadow: rgba(16, 185, 129, 0.3);
+        }
         body {
             font-family: 'Inter', sans-serif;
             background-color: #f3f4f6;
@@ -57,15 +86,15 @@
             border: 1px solid rgba(255, 255, 255, 0.2);
         }
         .prayer-active {
-            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            background: linear-gradient(135deg, var(--color-primary-500) 0%, var(--color-primary-600) 100%);
             color: white;
             transform: scale(1.02);
-            box-shadow: 0 10px 15px -3px rgba(16, 185, 129, 0.3);
+            box-shadow: 0 10px 15px -3px var(--color-primary-shadow);
         }
         .loader {
             border: 3px solid #f3f3f3;
             border-radius: 50%;
-            border-top: 3px solid #10b981;
+            border-top: 3px solid var(--color-primary-500);
             width: 20px;
             height: 20px;
             animation: spin 1s linear infinite;
@@ -94,10 +123,10 @@
                     <h1 class="text-2xl font-bold tracking-tight">Gebetszeiten</h1>
                     <p class="text-slate-400 text-sm" id="current-date-display">Lädt...</p>
                 </div>
-                
+
                 <div class="flex items-center gap-2">
                     <button onclick="toggleSettings()" class="bg-slate-800 hover:bg-slate-700 py-2 px-3 rounded-full transition flex items-center shadow-lg border border-slate-700">
-                        <i class="fas fa-map-marker-alt text-emerald-400"></i> 
+                        <i class="fas fa-map-marker-alt text-primary-400"></i>
                         <span id="location-name" class="ml-2 text-sm font-medium">Berlin</span>
                     </button>
                     <button onclick="toggleSettings()" class="bg-slate-800 hover:bg-slate-700 p-2 rounded-full transition w-10 h-10 flex items-center justify-center shadow-lg border border-slate-700" title="Einstellungen">
@@ -109,7 +138,7 @@
             <!-- Next Prayer Highlight -->
             <div class="text-center mt-6">
                 <p class="text-slate-400 text-sm uppercase tracking-wider mb-1">Nächstes Gebet in</p>
-                <div id="countdown" class="text-4xl md:text-5xl font-bold font-mono text-emerald-400 mb-2">--:--:--</div>
+                <div id="countdown" class="text-4xl md:text-5xl font-bold font-mono text-primary-400 mb-2">--:--:--</div>
                 <p id="next-prayer-name" class="text-xl font-medium text-white">Lädt...</p>
             </div>
         </div>
@@ -123,7 +152,7 @@
              <!-- Hidden by default via class, toggled by JS if adhan enabled -->
              <div id="player-container" class="hidden justify-center mb-2 animate-fade-in">
                 <button id="adhan-control-btn" onclick="toggleAdhanPlayback()" class="glass-card bg-white/90 text-slate-700 px-6 py-2 rounded-full shadow-lg flex items-center gap-3 transition hover:scale-105 active:scale-95 border-0">
-                    <div id="play-icon-container" class="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600">
+                    <div id="play-icon-container" class="w-8 h-8 rounded-full bg-primary-100 flex items-center justify-center text-primary-600">
                         <i class="fas fa-play ml-1 text-sm"></i>
                     </div>
                     <div class="text-left">
@@ -139,18 +168,18 @@
                     <h3 class="font-bold text-lg text-gray-800">Einstellungen</h3>
                     <button onclick="toggleSettings()" class="text-gray-400 hover:text-gray-600"><i class="fas fa-times"></i></button>
                 </div>
-                
+
                 <!-- Location Section -->
                 <div class="mb-6">
                     <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Standort</label>
                     <div class="flex gap-2 mb-3">
-                        <input type="text" id="city-search" placeholder="Stadt eingeben (z.B. Köln)..." 
-                               class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                        <input type="text" id="city-search" placeholder="Stadt eingeben (z.B. Köln)..."
+                               class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:outline-none">
                         <button onclick="searchCity()" class="bg-slate-800 text-white px-4 py-2 rounded-lg hover:bg-slate-700">
                             <i class="fas fa-search"></i>
                         </button>
                     </div>
-                    <button onclick="detectLocation()" class="w-full py-2 border border-emerald-500 text-emerald-600 rounded-lg hover:bg-emerald-50 transition flex justify-center items-center gap-2 text-sm font-medium">
+                    <button onclick="detectLocation()" class="w-full py-2 border border-primary-500 text-primary-600 rounded-lg hover:bg-primary-50 transition flex justify-center items-center gap-2 text-sm font-medium">
                         <i class="fas fa-location-arrow"></i> Meinen Standort verwenden
                     </button>
                     <div id="location-loading" class="hidden justify-center mt-2"><div class="loader"></div></div>
@@ -161,13 +190,13 @@
                 <!-- Adhan Settings -->
                 <div class="mb-6">
                     <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Adhan & Erinnerungen</label>
-                    
+
                     <!-- Main Audio Toggle -->
                     <div class="flex items-center justify-between mb-3">
                         <span class="text-sm text-gray-700">Audio abspielen</span>
                         <label class="relative inline-flex items-center cursor-pointer">
                             <input type="checkbox" id="adhan-toggle" class="sr-only peer" onchange="saveAdhanSettings()">
-                            <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500"></div>
+                            <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-500"></div>
                         </label>
                     </div>
 
@@ -194,7 +223,7 @@
                         <span class="text-sm text-gray-700">Spezieller Fajr Adhan</span>
                         <label class="relative inline-flex items-center cursor-pointer">
                             <input type="checkbox" id="fajr-adhan-toggle" class="sr-only peer" onchange="saveAdhanSettings()">
-                            <div class="w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-500"></div>
+                            <div class="w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-primary-500"></div>
                         </label>
                     </div>
                     <p class="text-[10px] text-gray-400 mt-2">Gilt für alle Gebete außer Sonnenaufgang.</p>
@@ -202,10 +231,23 @@
 
                 <div class="h-px bg-gray-200 w-full mb-6"></div>
 
+                <!-- Theme Settings -->
+                <div class="mb-6">
+                    <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Farbthema</label>
+                    <div class="flex gap-4 justify-start">
+                        <button onclick="setTheme('emerald')" class="w-8 h-8 rounded-full bg-[#10b981] hover:ring-2 ring-offset-2 ring-[#10b981] transition-transform hover:scale-110 shadow-sm" aria-label="Emerald Theme"></button>
+                        <button onclick="setTheme('blue')" class="w-8 h-8 rounded-full bg-[#3b82f6] hover:ring-2 ring-offset-2 ring-[#3b82f6] transition-transform hover:scale-110 shadow-sm" aria-label="Blue Theme"></button>
+                        <button onclick="setTheme('purple')" class="w-8 h-8 rounded-full bg-[#8b5cf6] hover:ring-2 ring-offset-2 ring-[#8b5cf6] transition-transform hover:scale-110 shadow-sm" aria-label="Purple Theme"></button>
+                        <button onclick="setTheme('amber')" class="w-8 h-8 rounded-full bg-[#f59e0b] hover:ring-2 ring-offset-2 ring-[#f59e0b] transition-transform hover:scale-110 shadow-sm" aria-label="Amber Theme"></button>
+                    </div>
+                </div>
+
+                <div class="h-px bg-gray-200 w-full mb-6"></div>
+
                 <!-- Method Section -->
                 <div>
                     <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Berechnungsmethode</label>
-                    <select id="method-select" onchange="changeMethod()" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:outline-none bg-white text-gray-700">
+                    <select id="method-select" onchange="changeMethod()" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:outline-none bg-white text-gray-700">
                         <option value="3">Muslim World League (Standard für Europa)</option>
                         <option value="2">Islamic Society of North America (ISNA)</option>
                         <option value="4">Umm Al-Qura University, Makkah</option>
@@ -229,12 +271,12 @@
             <div class="glass-card rounded-2xl shadow-lg overflow-hidden">
                 <div class="bg-gray-50 border-b border-gray-100 p-4 flex justify-between items-center">
                     <h2 class="font-bold text-gray-700">
-                        <i class="far fa-calendar-alt mr-2 text-emerald-500"></i>Heute 
+                        <i class="far fa-calendar-alt mr-2 text-primary-500"></i>Heute
                         <span id="today-gregorian" class="text-sm font-normal text-gray-500 ml-1"></span>
                     </h2>
-                    <span class="text-xs bg-emerald-100 text-emerald-700 px-2 py-1 rounded-full" id="hijri-date">Hijri Datum</span>
+                    <span class="text-xs bg-primary-100 text-primary-700 px-2 py-1 rounded-full" id="hijri-date">Hijri Datum</span>
                 </div>
-                
+
                 <div class="divide-y divide-gray-100" id="prayer-list">
                     <!-- Prayer Items will be injected here -->
                     <div class="p-4 text-center text-gray-500">Daten werden geladen...</div>
@@ -252,8 +294,8 @@
             <!-- Monthly Calendar View -->
             <div class="glass-card rounded-2xl shadow-lg overflow-hidden mt-6">
                  <div class="bg-gray-50 border-b border-gray-100 p-4 flex justify-between items-center flex-wrap gap-2">
-                    <h2 class="font-bold text-gray-700"><i class="fas fa-table mr-2 text-emerald-500"></i>Monatsübersicht</h2>
-                    
+                    <h2 class="font-bold text-gray-700"><i class="fas fa-table mr-2 text-primary-500"></i>Monatsübersicht</h2>
+
                     <!-- Month Navigation -->
                     <div class="flex items-center gap-2 bg-white rounded-lg border border-gray-200 p-1">
                         <button onclick="changeMonth(-1)" class="w-8 h-8 flex items-center justify-center hover:bg-gray-100 rounded text-gray-600 transition">
@@ -292,10 +334,10 @@
     <footer class="bg-white border-t border-gray-200 mt-auto py-6">
         <div class="max-w-2xl mx-auto text-center px-4">
             <p class="text-xs text-gray-400">Datenquelle: Aladhan API.</p>
-            
+
             <!-- iOS Scriptable Widget Button (Copy Feature) -->
             <div class="mt-4">
-                <button id="copy-widget-btn" onclick="copyScriptableCode()" 
+                <button id="copy-widget-btn" onclick="copyScriptableCode()"
                    class="inline-flex items-center gap-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-medium rounded-lg transition border border-slate-200 cursor-pointer">
                     <i class="fas fa-mobile-alt"></i>
                     <span id="copy-btn-text">iOS Scriptable Widget Code kopieren</span>
@@ -317,6 +359,49 @@
 
         const DEFAULT_METHOD = 3; // Muslim World League
 
+        const THEMES = {
+            emerald: {
+                50: '#ecfdf5',
+                100: '#d1fae5',
+                200: '#a7f3d0',
+                400: '#34d399',
+                500: '#10b981',
+                600: '#059669',
+                700: '#047857',
+                shadow: 'rgba(16, 185, 129, 0.3)'
+            },
+            blue: {
+                50: '#eff6ff',
+                100: '#dbeafe',
+                200: '#bfdbfe',
+                400: '#60a5fa',
+                500: '#3b82f6',
+                600: '#2563eb',
+                700: '#1d4ed8',
+                shadow: 'rgba(59, 130, 246, 0.3)'
+            },
+            purple: {
+                50: '#f5f3ff',
+                100: '#ede9fe',
+                200: '#ddd6fe',
+                400: '#a78bfa',
+                500: '#8b5cf6',
+                600: '#7c3aed',
+                700: '#6d28d9',
+                shadow: 'rgba(139, 92, 246, 0.3)'
+            },
+            amber: {
+                50: '#fffbeb',
+                100: '#fef3c7',
+                200: '#fde68a',
+                400: '#fbbf24',
+                500: '#f59e0b',
+                600: '#d97706',
+                700: '#b45309',
+                shadow: 'rgba(245, 158, 11, 0.3)'
+            }
+        };
+
         // Standard Prayer names mapping for German UI
         const PRAYER_NAMES = {
             Fajr: "Fajr (Morgendämmerung)",
@@ -331,6 +416,7 @@
         const TRACKED_PRAYERS = ['Fajr', 'Sunrise', 'Dhuhr', 'Asr', 'Maghrib', 'Isha'];
 
         let appState = {
+            theme: 'emerald',
             location: null,
             method: DEFAULT_METHOD,
             timings: null,
@@ -349,7 +435,7 @@
             updateDateDisplay();
             updateMonthDisplay(); // Initiale Anzeige für Monatsnav
             loadSettings(); // Loads method, location AND adhan settings
-            
+
             // Set up search enter key
             document.getElementById('city-search').addEventListener('keypress', function (e) {
                 if (e.key === 'Enter') searchCity();
@@ -357,7 +443,7 @@
 
             // Update countdown every second
             setInterval(updateCountdown, 1000);
-            
+
             // Audio Event Listener to update UI when audio ends
             const audio = document.getElementById('adhan-audio');
             audio.addEventListener('ended', () => {
@@ -371,14 +457,41 @@
             });
         });
 
+        function setTheme(themeName) {
+            if (!THEMES[themeName]) return;
+
+            appState.theme = themeName;
+            localStorage.setItem('prayerAppTheme', themeName);
+
+            const root = document.documentElement;
+            const colors = THEMES[themeName];
+
+            root.style.setProperty('--color-primary-50', colors[50]);
+            root.style.setProperty('--color-primary-100', colors[100]);
+            root.style.setProperty('--color-primary-200', colors[200]);
+            root.style.setProperty('--color-primary-400', colors[400]);
+            root.style.setProperty('--color-primary-500', colors[500]);
+            root.style.setProperty('--color-primary-600', colors[600]);
+            root.style.setProperty('--color-primary-700', colors[700]);
+            root.style.setProperty('--color-primary-shadow', colors.shadow);
+        }
+
         function loadSettings() {
+            // 0. Load Theme
+            const savedTheme = localStorage.getItem('prayerAppTheme');
+            if (savedTheme && THEMES[savedTheme]) {
+                setTheme(savedTheme);
+            } else {
+                setTheme('emerald');
+            }
+
             // 1. Load Method
             const savedMethod = localStorage.getItem('prayerAppMethod');
             if (savedMethod) {
                 appState.method = parseInt(savedMethod);
             }
             document.getElementById('method-select').value = appState.method;
-            
+
             // 2. Load Adhan Settings
             const savedAdhan = localStorage.getItem('prayerAppAdhan');
             if (savedAdhan) {
@@ -391,7 +504,7 @@
             document.getElementById('adhan-toggle').checked = appState.adhanEnabled;
             document.getElementById('adhan-offset-input').value = appState.adhanOffset;
             document.getElementById('fajr-adhan-toggle').checked = appState.fajrAdhanEnabled;
-            
+
             // Checkbox Status setzen (nur wenn Permission auch wirklich da ist oder wir sie wollen)
             if (Notification.permission === 'granted' && appState.notificationsEnabled) {
                 document.getElementById('notification-toggle').checked = true;
@@ -422,12 +535,12 @@
             const el = document.getElementById('settings-panel');
             el.classList.toggle('hidden');
         }
-        
+
         // --- Adhan Logic ---
-        
+
         function toggleNotifications() {
             const toggle = document.getElementById('notification-toggle');
-            
+
             if (toggle.checked) {
                 // Request Permission
                 if (!("Notification" in window)) {
@@ -461,11 +574,11 @@
             const offset = parseInt(document.getElementById('adhan-offset-input').value) || 10;
             const fajrEnabled = document.getElementById('fajr-adhan-toggle').checked;
             // notification state is managed in toggleNotifications but saved here too for persistence
-            
+
             appState.adhanEnabled = enabled;
             appState.adhanOffset = offset;
             appState.fajrAdhanEnabled = fajrEnabled;
-            
+
             localStorage.setItem('prayerAppAdhan', JSON.stringify({
                 enabled: enabled,
                 offset: offset,
@@ -513,15 +626,15 @@
             const iconContainer = document.getElementById('play-icon-container');
             const icon = iconContainer.querySelector('i');
             const statusText = document.getElementById('adhan-status-text');
-            
+
             if (isPlaying) {
                 icon.className = "fas fa-pause ml-0 text-sm"; // Remove ml-1 for center alignment
                 iconContainer.className = "w-8 h-8 rounded-full bg-red-100 flex items-center justify-center text-red-600 animate-pulse";
                 statusText.innerText = "Spielt ab...";
-                statusText.className = "text-xs font-bold text-emerald-600";
+                statusText.className = "text-xs font-bold text-primary-600";
             } else {
                 icon.className = "fas fa-play ml-1 text-sm";
-                iconContainer.className = "w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600";
+                iconContainer.className = "w-8 h-8 rounded-full bg-primary-100 flex items-center justify-center text-primary-600";
                 statusText.innerText = appState.adhanEnabled ? `${appState.adhanOffset} Min. vor Gebet` : "Inaktiv";
                 statusText.className = "text-xs font-medium";
             }
@@ -534,11 +647,11 @@
             const newMethod = select.value;
             appState.method = newMethod;
             localStorage.setItem('prayerAppMethod', newMethod);
-            
+
             // Refetch data with new method if we have a location
             if (appState.location) {
                 // Visual feedback
-                document.getElementById('prayer-list').innerHTML = '<div class="p-4 text-center text-emerald-600"><i class="fas fa-sync fa-spin mr-2"></i>Aktualisiere Zeiten...</div>';
+                document.getElementById('prayer-list').innerHTML = '<div class="p-4 text-center text-primary-600"><i class="fas fa-sync fa-spin mr-2"></i>Aktualisiere Zeiten...</div>';
                 fetchPrayerData();
             }
         }
@@ -547,7 +660,7 @@
             const now = new Date();
             const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
             document.getElementById('current-date-display').innerText = now.toLocaleDateString('de-DE', options);
-            
+
             // Update Gregorian date next to "Heute"
             const shortOptions = { day: '2-digit', month: '2-digit', year: 'numeric' };
             const shortDate = now.toLocaleDateString('de-DE', shortOptions);
@@ -566,7 +679,7 @@
             appState.viewDate = new Date(currentView); // Trigger update mit neuem Objekt
 
             updateMonthDisplay();
-            
+
             // Lade Daten für den neuen Monat
             if (appState.location) {
                 document.getElementById('month-table-body').innerHTML = '<tr><td colspan="6" class="text-center py-4"><div class="loader mx-auto"></div></td></tr>';
@@ -584,17 +697,17 @@
         function saveLocation(name, lat, lng) {
             appState.location = { name, lat, lng };
             localStorage.setItem('prayerAppLocation', JSON.stringify(appState.location));
-            
+
             document.getElementById('location-name').innerText = name;
-            
+
             // Close settings only if opened (simple toggle logic might need care, but fine here)
-            // Ideally we check if it's visible. 
+            // Ideally we check if it's visible.
             const settingsPanel = document.getElementById('settings-panel');
             if(!settingsPanel.classList.contains('hidden')) {
                 settingsPanel.classList.add('hidden');
             }
 
-            fetchPrayerData(); 
+            fetchPrayerData();
         }
 
         // 1. Browser Geolocation
@@ -612,7 +725,7 @@
                     },
                     (error) => {
                         console.warn("Browser geo failed", error);
-                        detectLocationViaIP(); 
+                        detectLocationViaIP();
                     }
                 );
             } else {
@@ -623,9 +736,9 @@
         // 2. IP Geolocation Fallback
         async function detectLocationViaIP() {
             try {
-                const response = await fetch('https://ipwho.is/'); 
+                const response = await fetch('https://ipwho.is/');
                 const data = await response.json();
-                
+
                 if (data.success) {
                     saveLocation(data.city, data.latitude, data.longitude);
                 } else {
@@ -696,16 +809,16 @@
             const viewDate = appState.viewDate;
             const year = viewDate.getFullYear();
             const month = viewDate.getMonth() + 1;
-            
+
             // Use the selected method
             const method = appState.method || DEFAULT_METHOD;
-            
+
             const url = `https://api.aladhan.com/v1/calendar/${year}/${month}?latitude=${appState.location.lat}&longitude=${appState.location.lng}&method=${method}&school=1`;
 
             try {
                 const response = await fetch(url);
                 const json = await response.json();
-                
+
                 if (json.code === 200) {
                     processAPIData(json.data);
                 }
@@ -725,7 +838,7 @@
             if (data.length > 0) {
                 const dataMonth = parseInt(data[0].date.gregorian.month.number);
                 const dataYear = parseInt(data[0].date.gregorian.year);
-                
+
                 const isCurrentMonth = (dataMonth === currentMonth && dataYear === currentYear);
 
                 // NUR wenn wir im aktuellen Monat sind, aktualisieren wir die "Heute" Ansicht
@@ -735,16 +848,16 @@
 
                     if (todayData) {
                         appState.timings = todayData.timings;
-                        
+
                         const hijri = todayData.date.hijri;
                         document.getElementById('hijri-date').innerText = `${hijri.day} ${hijri.month.en} ${hijri.year}`;
 
-                        updatePrayerStates(appState.timings); 
+                        updatePrayerStates(appState.timings);
                         renderTodayList(appState.timings);
                     }
                 }
             }
-            
+
             // Die Kalendertabelle wird IMMER aktualisiert mit den geladenen Daten
             renderMonthTable(data);
         }
@@ -757,7 +870,7 @@
         function updatePrayerStates(timings) {
             const now = new Date();
             const currentTime = now.getHours() * 60 + now.getMinutes();
-            
+
             // 1. Nächstes Gebet finden (für Countdown)
             // Wir schauen nur nach den Gebeten für den Countdown (TRACKED_PRAYERS)
             let foundNext = false;
@@ -830,11 +943,11 @@
                 // Einfacher Hack: Wir setzen viewDate auf Heute zurück, damit der User sieht dass ein neuer Tag ist.
                 // Oder wir lassen es so, dann aktualisiert sich nur der Countdown falls möglich.
                 // Beste UX: Seite neu laden oder current data neu fetchen.
-                
+
                 // Wir resetten hier viewDate auf current date um sicherzugehen dass "Heute" aktualisiert wird
                 appState.viewDate = new Date();
                 updateMonthDisplay();
-                fetchPrayerData(); 
+                fetchPrayerData();
                 return;
             }
 
@@ -842,42 +955,42 @@
             const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
             const seconds = Math.floor((diff % (1000 * 60)) / 1000);
 
-            document.getElementById('countdown').innerText = 
+            document.getElementById('countdown').innerText =
                 `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-                
+
             // --- Check for Adhan Trigger & Notification ---
             // Only if (Audio OR Notification) enabled AND next prayer is NOT sunrise
             const isTriggerEnabled = appState.adhanEnabled || appState.notificationsEnabled;
 
             if (isTriggerEnabled && appState.nextPrayer && appState.nextPrayer.name !== 'Sunrise') {
-                
+
                 // Calculate trigger time: Prayer Time - Offset Minutes
                 const prayerTimeMs = appState.nextPrayer.obj.getTime();
                 const offsetMs = appState.adhanOffset * 60 * 1000;
                 const triggerTimeMs = prayerTimeMs - offsetMs;
-                
+
                 // Current time
                 const nowMs = now.getTime();
-                
+
                 // We check if we are within a 2-second window of the trigger time (to handle tick skip)
                 // AND ensure we haven't played for this specific prayer instance yet.
                 // Using a simple identifier: "PrayerName-Day"
                 const prayerId = `${appState.nextPrayer.name}-${appState.nextPrayer.obj.getDate()}`;
-                
+
                 if (nowMs >= triggerTimeMs && nowMs < triggerTimeMs + 2000) {
                     if (appState.adhanPlayedFor !== prayerId) {
-                        
+
                         // 1. Audio Playback
                         if (appState.adhanEnabled) {
                             const audio = document.getElementById('adhan-audio');
-                            
+
                             // Dynamically set source based on prayer and settings
                             let src = "https://cdn.aladhan.com/audio/adhans/a11-mansour-al-zahrani.mp3"; // Default
-                            
+
                             if (appState.nextPrayer.name === 'Fajr' && appState.fajrAdhanEnabled) {
                                 src = "https://cdn.aladhan.com/audio/adhans/fajr/f2-mansour-al-zahrani.mp3";
                             }
-                            
+
                             audio.src = src;
                             audio.play().catch(e => {
                                 console.log("Autoplay blocked or error:", e);
@@ -888,7 +1001,7 @@
                         if (appState.notificationsEnabled && Notification.permission === "granted") {
                             const prayerName = PRAYER_NAMES[appState.nextPrayer.name];
                             const timeStr = parseTime(appState.timings[appState.nextPrayer.name]);
-                            
+
                             new Notification(`Gebetszeit: ${prayerName}`, {
                                 body: `Es ist bald Zeit für das Gebet (${timeStr}).`,
                                 icon: "https://img.icons8.com/color/96/mosque.png", // Free icon for context
@@ -912,7 +1025,7 @@
                 const time = parseTime(timings[key]);
                 // ÄNDERUNG: Prüfe auf currentPrayer statt nextPrayer
                 const isActive = appState.currentPrayer === key;
-                
+
                 let icon = 'fa-clock';
                 if(key === 'Fajr') icon = 'fa-cloud-sun';
                 if(key === 'Sunrise') icon = 'fa-sun';
@@ -924,7 +1037,7 @@
                 const html = `
                     <div class="flex justify-between items-center p-4 transition-all duration-300 ${isActive ? 'prayer-active' : 'hover:bg-gray-50'}">
                         <div class="flex items-center gap-3">
-                            <div class="w-8 text-center"><i class="fas ${icon} ${isActive ? 'text-white' : 'text-emerald-500'}"></i></div>
+                            <div class="w-8 text-center"><i class="fas ${icon} ${isActive ? 'text-white' : 'text-primary-500'}"></i></div>
                             <span class="font-medium">${PRAYER_NAMES[key] || key}</span>
                         </div>
                         <span class="font-bold font-mono text-lg">${time}</span>
@@ -937,7 +1050,7 @@
         function renderMonthTable(data) {
             const tbody = document.getElementById('month-table-body');
             tbody.innerHTML = '';
-            
+
             const now = new Date();
             const currentDay = now.getDate();
             const currentMonth = now.getMonth() + 1;
@@ -952,13 +1065,13 @@
                 const t = day.timings;
                 const d = day.date.gregorian;
                 const dayNum = parseInt(d.day);
-                
+
                 // Highlight nur wenn es wirklich heute ist (Tag + Monat + Jahr stimmen)
                 const isToday = isCurrentMonthView && (dayNum === currentDay);
 
                 // Responsive padding and hidden month name on mobile
                 const row = `
-                    <tr class="border-b ${isToday ? 'bg-emerald-100 font-semibold' : 'hover:bg-gray-50'}">
+                    <tr class="border-b ${isToday ? 'bg-primary-100 font-semibold' : 'hover:bg-gray-50'}">
                         <td class="px-2 py-2 md:px-4 md:py-3 whitespace-nowrap">${d.day}. <span class="hidden sm:inline">${d.month.en.slice(0,3)}</span></td>
                         <td class="px-1 py-2 md:px-4 md:py-3 text-center">${parseTime(t.Fajr)}</td>
                         <td class="px-1 py-2 md:px-4 md:py-3 text-center">${parseTime(t.Dhuhr)}</td>
@@ -1343,15 +1456,15 @@ function getDarkVariant(hex, factor) {
             const btnText = document.getElementById('copy-btn-text');
             const originalText = btnText.innerText;
             const btn = document.getElementById('copy-widget-btn');
-            
+
             btnText.innerText = "Code kopiert!";
-            btn.classList.add('bg-emerald-100', 'text-emerald-700', 'border-emerald-200');
+            btn.classList.add('bg-primary-100', 'text-primary-700', 'border-primary-200');
             btn.classList.remove('bg-slate-100', 'text-slate-700', 'border-slate-200');
 
             // Revert after 2 seconds
             setTimeout(() => {
                 btnText.innerText = originalText;
-                btn.classList.remove('bg-emerald-100', 'text-emerald-700', 'border-emerald-200');
+                btn.classList.remove('bg-primary-100', 'text-primary-700', 'border-primary-200');
                 btn.classList.add('bg-slate-100', 'text-slate-700', 'border-slate-200');
             }, 2000);
         }
