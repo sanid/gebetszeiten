@@ -39,6 +39,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
+            darkMode: 'class',
             theme: {
                 extend: {
                     colors: {
@@ -79,11 +80,20 @@
             background-color: #f3f4f6;
             /* Prevent pull-to-refresh on mobile which looks weird in standalone mode */
             overscroll-behavior-y: none;
+            transition: background-color 0.3s ease;
+        }
+        html.dark body {
+            background-color: #0f172a;
         }
         .glass-card {
             background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(10px);
             border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: background-color 0.3s ease, border-color 0.3s ease;
+        }
+        html.dark .glass-card {
+            background: rgba(30, 41, 59, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.05);
         }
         .prayer-active {
             background: linear-gradient(135deg, var(--color-primary-500) 0%, var(--color-primary-600) 100%);
@@ -105,7 +115,7 @@
         }
     </style>
 </head>
-<body class="text-gray-800 antialiased min-h-screen flex flex-col">
+<body class="text-gray-800 dark:text-gray-200 antialiased min-h-screen flex flex-col">
 
     <!-- Audio Element (Source set dynamically via JS) -->
     <audio id="adhan-audio" preload="none"></audio>
@@ -151,88 +161,99 @@
              <!-- Audio Control Button (Zwischen Countdown und Heute) -->
              <!-- Hidden by default via class, toggled by JS if adhan enabled -->
              <div id="player-container" class="hidden justify-center mb-2 animate-fade-in">
-                <button id="adhan-control-btn" onclick="toggleAdhanPlayback()" class="glass-card bg-white/90 text-slate-700 px-6 py-2 rounded-full shadow-lg flex items-center gap-3 transition hover:scale-105 active:scale-95 border-0">
-                    <div id="play-icon-container" class="w-8 h-8 rounded-full bg-primary-100 flex items-center justify-center text-primary-600">
+                <button id="adhan-control-btn" onclick="toggleAdhanPlayback()" class="glass-card bg-white/90 dark:bg-slate-800/90 text-slate-700 dark:text-slate-200 px-6 py-2 rounded-full shadow-lg flex items-center gap-3 transition hover:scale-105 active:scale-95 border-0">
+                    <div id="play-icon-container" class="w-8 h-8 rounded-full bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center text-primary-600 dark:text-primary-400">
                         <i class="fas fa-play ml-1 text-sm"></i>
                     </div>
                     <div class="text-left">
-                        <p class="text-[10px] text-gray-500 font-semibold uppercase tracking-wider">Adhan Player</p>
+                        <p class="text-[10px] text-gray-500 dark:text-gray-400 font-semibold uppercase tracking-wider">Adhan Player</p>
                         <p id="adhan-status-text" class="text-xs font-medium">Bereit</p>
                     </div>
                 </button>
             </div>
 
             <!-- Settings Panel (Hidden by default) -->
-            <div id="settings-panel" class="hidden glass-card rounded-2xl shadow-xl p-6 mb-6 animate-fade-in ring-1 ring-black/5">
+            <div id="settings-panel" class="hidden glass-card rounded-2xl shadow-xl p-6 mb-6 animate-fade-in ring-1 ring-black/5 dark:ring-white/10">
                 <div class="flex justify-between items-center mb-4">
-                    <h3 class="font-bold text-lg text-gray-800">Einstellungen</h3>
-                    <button onclick="toggleSettings()" class="text-gray-400 hover:text-gray-600"><i class="fas fa-times"></i></button>
+                    <h3 class="font-bold text-lg text-gray-800 dark:text-gray-100">Einstellungen</h3>
+                    <button onclick="toggleSettings()" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"><i class="fas fa-times"></i></button>
                 </div>
 
                 <!-- Location Section -->
                 <div class="mb-6">
-                    <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Standort</label>
+                    <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">Standort</label>
                     <div class="flex gap-2 mb-3">
                         <input type="text" id="city-search" placeholder="Stadt eingeben (z.B. Köln)..."
-                               class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:outline-none">
+                               class="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 dark:bg-slate-700 dark:text-white rounded-lg focus:ring-2 focus:ring-primary-500 focus:outline-none">
                         <button onclick="searchCity()" class="bg-slate-800 text-white px-4 py-2 rounded-lg hover:bg-slate-700">
                             <i class="fas fa-search"></i>
                         </button>
                     </div>
-                    <button onclick="detectLocation()" class="w-full py-2 border border-primary-500 text-primary-600 rounded-lg hover:bg-primary-50 transition flex justify-center items-center gap-2 text-sm font-medium">
+                    <button onclick="detectLocation()" class="w-full py-2 border border-primary-500 text-primary-600 dark:text-primary-400 dark:hover:bg-primary-900/30 rounded-lg hover:bg-primary-50 transition flex justify-center items-center gap-2 text-sm font-medium">
                         <i class="fas fa-location-arrow"></i> Meinen Standort verwenden
                     </button>
                     <div id="location-loading" class="hidden justify-center mt-2"><div class="loader"></div></div>
                 </div>
 
-                <div class="h-px bg-gray-200 w-full mb-6"></div>
+                <div class="h-px bg-gray-200 dark:bg-gray-700 w-full mb-6"></div>
 
                 <!-- Adhan Settings -->
                 <div class="mb-6">
-                    <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Adhan & Erinnerungen</label>
+                    <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">Adhan & Erinnerungen</label>
 
                     <!-- Main Audio Toggle -->
                     <div class="flex items-center justify-between mb-3">
-                        <span class="text-sm text-gray-700">Audio abspielen</span>
+                        <span class="text-sm text-gray-700 dark:text-gray-300">Audio abspielen</span>
                         <label class="relative inline-flex items-center cursor-pointer">
                             <input type="checkbox" id="adhan-toggle" class="sr-only peer" onchange="saveAdhanSettings()">
-                            <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-500"></div>
+                            <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-500 dark:bg-gray-700 dark:peer-checked:bg-primary-500"></div>
                         </label>
                     </div>
 
                     <!-- Notification Toggle (NEU) -->
                     <div class="flex items-center justify-between mb-3">
                         <div class="flex flex-col">
-                            <span class="text-sm text-gray-700">Desktop Benachrichtigung</span>
-                            <span class="text-[10px] text-gray-400">System-Popup anzeigen</span>
+                            <span class="text-sm text-gray-700 dark:text-gray-300">Desktop Benachrichtigung</span>
+                            <span class="text-[10px] text-gray-400 dark:text-gray-500">System-Popup anzeigen</span>
                         </div>
                         <label class="relative inline-flex items-center cursor-pointer">
                             <input type="checkbox" id="notification-toggle" class="sr-only peer" onchange="toggleNotifications()">
-                            <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-500"></div>
+                            <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-500 dark:bg-gray-700 dark:peer-checked:bg-blue-500"></div>
                         </label>
                     </div>
 
                     <!-- Offset Setting -->
                     <div class="flex items-center gap-3 mb-3">
-                        <input type="number" id="adhan-offset-input" min="0" max="60" value="10" class="w-16 px-2 py-1 border border-gray-300 rounded text-center" onchange="saveAdhanSettings()">
-                        <span class="text-sm text-gray-600">Minuten vor dem Gebet</span>
+                        <input type="number" id="adhan-offset-input" min="0" max="60" value="10" class="w-16 px-2 py-1 border border-gray-300 dark:border-gray-600 dark:bg-slate-700 dark:text-white rounded text-center" onchange="saveAdhanSettings()">
+                        <span class="text-sm text-gray-600 dark:text-gray-400">Minuten vor dem Gebet</span>
                     </div>
 
                     <!-- Fajr Special Toggle -->
                     <div class="flex items-center justify-between mt-2">
-                        <span class="text-sm text-gray-700">Spezieller Fajr Adhan</span>
+                        <span class="text-sm text-gray-700 dark:text-gray-300">Spezieller Fajr Adhan</span>
                         <label class="relative inline-flex items-center cursor-pointer">
                             <input type="checkbox" id="fajr-adhan-toggle" class="sr-only peer" onchange="saveAdhanSettings()">
-                            <div class="w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-primary-500"></div>
+                            <div class="w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-primary-500 dark:bg-gray-700 dark:peer-checked:bg-primary-500"></div>
                         </label>
                     </div>
-                    <p class="text-[10px] text-gray-400 mt-2">Gilt für alle Gebete außer Sonnenaufgang.</p>
+                    <p class="text-[10px] text-gray-400 dark:text-gray-500 mt-2">Gilt für alle Gebete außer Sonnenaufgang.</p>
                 </div>
 
-                <div class="h-px bg-gray-200 w-full mb-6"></div>
+                <div class="h-px bg-gray-200 dark:bg-gray-700 w-full mb-6"></div>
 
                 <!-- Theme Settings -->
                 <div class="mb-6">
+                    <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Design</label>
+
+                    <!-- Dark Mode Toggle -->
+                    <div class="flex items-center justify-between mb-4">
+                        <span class="text-sm text-gray-700 dark:text-gray-300">Dunkelmodus</span>
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" id="dark-mode-toggle" class="sr-only peer" onchange="toggleDarkMode()">
+                            <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-slate-700 dark:bg-gray-700 dark:peer-checked:bg-primary-500"></div>
+                        </label>
+                    </div>
+
                     <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Farbthema</label>
                     <div class="flex gap-4 justify-start">
                         <button onclick="setTheme('emerald')" class="w-8 h-8 rounded-full bg-[#10b981] hover:ring-2 ring-offset-2 ring-[#10b981] transition-transform hover:scale-110 shadow-sm" aria-label="Emerald Theme"></button>
@@ -246,8 +267,8 @@
 
                 <!-- Method Section -->
                 <div>
-                    <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Berechnungsmethode</label>
-                    <select id="method-select" onchange="changeMethod()" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:outline-none bg-white text-gray-700">
+                    <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">Berechnungsmethode</label>
+                    <select id="method-select" onchange="changeMethod()" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:outline-none bg-white dark:bg-slate-700 text-gray-700 dark:text-gray-200">
                         <option value="3">Muslim World League (Standard für Europa)</option>
                         <option value="2">Islamic Society of North America (ISNA)</option>
                         <option value="4">Umm Al-Qura University, Makkah</option>
@@ -263,29 +284,29 @@
                         <option value="11">Majlis Ugama Islam Singapura</option>
                         <option value="14">Spiritual Administration of Muslims of Russia</option>
                     </select>
-                    <p class="text-xs text-gray-400 mt-2">Diese Einstellung beeinflusst hauptsächlich Fajr- und Isha-Zeiten.</p>
+                    <p class="text-xs text-gray-400 dark:text-gray-500 mt-2">Diese Einstellung beeinflusst hauptsächlich Fajr- und Isha-Zeiten.</p>
                 </div>
             </div>
 
             <!-- Today's Times Cards -->
             <div class="glass-card rounded-2xl shadow-lg overflow-hidden">
-                <div class="bg-gray-50 border-b border-gray-100 p-4 flex justify-between items-center">
-                    <h2 class="font-bold text-gray-700">
+                <div class="bg-gray-50 dark:bg-slate-700/50 border-b border-gray-100 dark:border-gray-700 p-4 flex justify-between items-center">
+                    <h2 class="font-bold text-gray-700 dark:text-gray-200">
                         <i class="far fa-calendar-alt mr-2 text-primary-500"></i>Heute
-                        <span id="today-gregorian" class="text-sm font-normal text-gray-500 ml-1"></span>
+                        <span id="today-gregorian" class="text-sm font-normal text-gray-500 dark:text-gray-400 ml-1"></span>
                     </h2>
-                    <span class="text-xs bg-primary-100 text-primary-700 px-2 py-1 rounded-full" id="hijri-date">Hijri Datum</span>
+                    <span class="text-xs bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300 px-2 py-1 rounded-full" id="hijri-date">Hijri Datum</span>
                 </div>
 
-                <div class="divide-y divide-gray-100" id="prayer-list">
+                <div class="divide-y divide-gray-100 dark:divide-gray-700" id="prayer-list">
                     <!-- Prayer Items will be injected here -->
-                    <div class="p-4 text-center text-gray-500">Daten werden geladen...</div>
+                    <div class="p-4 text-center text-gray-500 dark:text-gray-400">Daten werden geladen...</div>
                 </div>
             </div>
 
             <!-- Fajr Info Disclaimer -->
             <div class="mx-2 mt-4 px-2">
-                 <p class="text-[10px] md:text-xs text-gray-400 text-center leading-relaxed max-w-2xl mx-auto">
+                 <p class="text-[10px] md:text-xs text-gray-400 dark:text-gray-500 text-center leading-relaxed max-w-2xl mx-auto">
                     <i class="fas fa-info-circle mr-1"></i>
                     Das Fajr-Gebet beginnt mit der Morgendämmerung (wenn der Himmel zu leuchten beginnt) und die Zeit endet genau in dem Moment, wenn die Sonne den Horizont überschreitet, also mit dem Sonnenaufgang, wobei es als sicherer gilt, es kurz davor zu beten.
                 </p>
@@ -293,24 +314,24 @@
 
             <!-- Monthly Calendar View -->
             <div class="glass-card rounded-2xl shadow-lg overflow-hidden mt-6">
-                 <div class="bg-gray-50 border-b border-gray-100 p-4 flex justify-between items-center flex-wrap gap-2">
-                    <h2 class="font-bold text-gray-700"><i class="fas fa-table mr-2 text-primary-500"></i>Monatsübersicht</h2>
+                 <div class="bg-gray-50 dark:bg-slate-700/50 border-b border-gray-100 dark:border-gray-700 p-4 flex justify-between items-center flex-wrap gap-2">
+                    <h2 class="font-bold text-gray-700 dark:text-gray-200"><i class="fas fa-table mr-2 text-primary-500"></i>Monatsübersicht</h2>
 
                     <!-- Month Navigation -->
-                    <div class="flex items-center gap-2 bg-white rounded-lg border border-gray-200 p-1">
-                        <button onclick="changeMonth(-1)" class="w-8 h-8 flex items-center justify-center hover:bg-gray-100 rounded text-gray-600 transition">
+                    <div class="flex items-center gap-2 bg-white dark:bg-slate-800 rounded-lg border border-gray-200 dark:border-gray-600 p-1">
+                        <button onclick="changeMonth(-1)" class="w-8 h-8 flex items-center justify-center hover:bg-gray-100 dark:hover:bg-gray-700 rounded text-gray-600 dark:text-gray-300 transition">
                             <i class="fas fa-chevron-left"></i>
                         </button>
-                        <span id="month-display" class="text-sm font-semibold w-32 text-center text-gray-700 select-none">Lade...</span>
-                        <button onclick="changeMonth(1)" class="w-8 h-8 flex items-center justify-center hover:bg-gray-100 rounded text-gray-600 transition">
+                        <span id="month-display" class="text-sm font-semibold w-32 text-center text-gray-700 dark:text-gray-200 select-none">Lade...</span>
+                        <button onclick="changeMonth(1)" class="w-8 h-8 flex items-center justify-center hover:bg-gray-100 dark:hover:bg-gray-700 rounded text-gray-600 dark:text-gray-300 transition">
                             <i class="fas fa-chevron-right"></i>
                         </button>
                     </div>
                 </div>
                 <div class="overflow-x-auto">
                     <!-- Adjusted table for mobile responsiveness -->
-                    <table class="w-full text-xs md:text-sm text-left text-gray-500">
-                        <thead class="text-xs text-gray-700 uppercase bg-gray-50">
+                    <table class="w-full text-xs md:text-sm text-left text-gray-500 dark:text-gray-400">
+                        <thead class="text-xs text-gray-700 dark:text-gray-300 uppercase bg-gray-50 dark:bg-slate-700/50">
                             <tr>
                                 <th scope="col" class="px-2 py-3 md:px-4">Tag</th>
                                 <th scope="col" class="px-1 py-3 md:px-4 text-center">Fajr</th>
@@ -331,20 +352,20 @@
     </main>
 
     <!-- Footer -->
-    <footer class="bg-white border-t border-gray-200 mt-auto py-6">
+    <footer class="bg-white dark:bg-slate-900 border-t border-gray-200 dark:border-gray-800 mt-auto py-6">
         <div class="max-w-2xl mx-auto text-center px-4">
-            <p class="text-xs text-gray-400">Datenquelle: Aladhan API.</p>
+            <p class="text-xs text-gray-400 dark:text-gray-600">Datenquelle: Aladhan API.</p>
 
             <!-- iOS Scriptable Widget Button (Copy Feature) -->
             <div class="mt-4">
                 <button id="copy-widget-btn" onclick="copyScriptableCode()"
-                   class="inline-flex items-center gap-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-medium rounded-lg transition border border-slate-200 cursor-pointer">
+                   class="inline-flex items-center gap-2 px-4 py-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-xs font-medium rounded-lg transition border border-slate-200 dark:border-slate-700 cursor-pointer">
                     <i class="fas fa-mobile-alt"></i>
                     <span id="copy-btn-text">iOS Scriptable Widget Code kopieren</span>
                 </button>
             </div>
 
-            <p class="text-xs text-gray-400 mt-4">&copy; 2026 Gebetszeiten App - s4nid</p>
+            <p class="text-xs text-gray-400 dark:text-gray-600 mt-4">&copy; 2026 Gebetszeiten App - s4nid</p>
         </div>
     </footer>
 
@@ -417,6 +438,7 @@
 
         let appState = {
             theme: 'emerald',
+            darkMode: false,
             location: null,
             method: DEFAULT_METHOD,
             timings: null,
@@ -434,7 +456,7 @@
         document.addEventListener('DOMContentLoaded', () => {
             updateDateDisplay();
             updateMonthDisplay(); // Initiale Anzeige für Monatsnav
-            loadSettings(); // Loads method, location AND adhan settings
+            loadSettings(); // Loads method, location, adhan settings, AND dark mode
 
             // Set up search enter key
             document.getElementById('city-search').addEventListener('keypress', function (e) {
@@ -457,6 +479,19 @@
             });
         });
 
+        function toggleDarkMode() {
+            const isDark = document.getElementById('dark-mode-toggle').checked;
+            appState.darkMode = isDark;
+            localStorage.setItem('prayerAppDarkMode', isDark);
+
+            const html = document.documentElement;
+            if (isDark) {
+                html.classList.add('dark');
+            } else {
+                html.classList.remove('dark');
+            }
+        }
+
         function setTheme(themeName) {
             if (!THEMES[themeName]) return;
 
@@ -477,7 +512,19 @@
         }
 
         function loadSettings() {
-            // 0. Load Theme
+            // 0. Load Dark Mode
+            const savedDarkMode = localStorage.getItem('prayerAppDarkMode');
+            if (savedDarkMode === 'true') {
+                appState.darkMode = true;
+                document.documentElement.classList.add('dark');
+                document.getElementById('dark-mode-toggle').checked = true;
+            } else {
+                appState.darkMode = false;
+                document.documentElement.classList.remove('dark');
+                document.getElementById('dark-mode-toggle').checked = false;
+            }
+
+            // 0.1 Load Theme
             const savedTheme = localStorage.getItem('prayerAppTheme');
             if (savedTheme && THEMES[savedTheme]) {
                 setTheme(savedTheme);
@@ -1035,7 +1082,7 @@
                 if(key === 'Isha') icon = 'fa-star';
 
                 const html = `
-                    <div class="flex justify-between items-center p-4 transition-all duration-300 ${isActive ? 'prayer-active' : 'hover:bg-gray-50'}">
+                    <div class="flex justify-between items-center p-4 transition-all duration-300 ${isActive ? 'prayer-active' : 'hover:bg-gray-50 dark:hover:bg-white/5'}">
                         <div class="flex items-center gap-3">
                             <div class="w-8 text-center"><i class="fas ${icon} ${isActive ? 'text-white' : 'text-primary-500'}"></i></div>
                             <span class="font-medium">${PRAYER_NAMES[key] || key}</span>
@@ -1071,7 +1118,7 @@
 
                 // Responsive padding and hidden month name on mobile
                 const row = `
-                    <tr class="border-b ${isToday ? 'bg-primary-100 font-semibold' : 'hover:bg-gray-50'}">
+                    <tr class="border-b dark:border-gray-700 ${isToday ? 'bg-primary-100 dark:bg-primary-900/30 font-semibold' : 'hover:bg-gray-50 dark:hover:bg-white/5'}">
                         <td class="px-2 py-2 md:px-4 md:py-3 whitespace-nowrap">${d.day}. <span class="hidden sm:inline">${d.month.en.slice(0,3)}</span></td>
                         <td class="px-1 py-2 md:px-4 md:py-3 text-center">${parseTime(t.Fajr)}</td>
                         <td class="px-1 py-2 md:px-4 md:py-3 text-center">${parseTime(t.Dhuhr)}</td>
