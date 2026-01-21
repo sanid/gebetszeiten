@@ -4,11 +4,9 @@ let currentSurah = null;
 let isPlaying = false;
 let currentAudioIndex = -1;
 let audioQueue = []; // Array of objects { url, ayahNumber, id }
-let tryingSingleFile = false; // Flag to track single file playback attempt
 
 // --- Settings State ---
 let currentReciter = localStorage.getItem('quran_reciter') || 'ar.mahermuaiqly';
-let continuousPlay = localStorage.getItem('quran_continuous') === 'true';
 let recitersList = [];
 
 // --- Translations ---
@@ -51,22 +49,41 @@ document.addEventListener('DOMContentLoaded', () => {
     globalAudio.addEventListener('ended', playNextInQueue);
     globalAudio.addEventListener('pause', () => updateAudioUI(false));
     globalAudio.addEventListener('play', () => updateAudioUI(true));
-
-    // Handle Audio Errors (e.g. 404 on single file)
     globalAudio.addEventListener('error', (e) => {
-        if (tryingSingleFile) {
-            console.warn("Audio error detected during single file playback attempt", e);
-            tryingSingleFile = false;
-            fallbackToQueue();
-        }
+        console.warn("Audio error detected", e);
+        // Try to skip to next if error
+        playNextInQueue();
     });
 
-    // Initialize UI Controls
-    updateContinuousPlayUI();
+    // Initialize View Options
+    initViewOptions();
 
-    // Load reciters list in background to populate button text
-    fetchReciters().then(() => updateReciterButtonUI());
+    // Load reciters list
+    fetchReciters().then(() => populateReciterSelect());
 });
+
+// --- View Options Logic ---
+function initViewOptions() {
+    const toggleArabic = document.getElementById('toggle-arabic');
+    const toggleGerman = document.getElementById('toggle-german');
+    const toggleAudio = document.getElementById('toggle-audio');
+
+    if (toggleArabic) toggleViewOption('arabic', toggleArabic.checked);
+    if (toggleGerman) toggleViewOption('german', toggleGerman.checked);
+    if (toggleAudio) toggleViewOption('audio', toggleAudio.checked);
+}
+
+function toggleViewOption(type, show) {
+    // type: 'arabic', 'german', 'audio'
+    // adds class: 'hide-arabic', 'hide-german', 'hide-audio' to container
+    if (!ayahsContainer) return;
+
+    if (show) {
+        ayahsContainer.classList.remove(`hide-${type}`);
+    } else {
+        ayahsContainer.classList.add(`hide-${type}`);
+    }
+}
 
 // --- Surah List Logic ---
 
@@ -201,12 +218,14 @@ function renderSurahView(number) {
     document.getElementById('detail-surah-name-en').innerText = info.englishName;
     document.getElementById('detail-surah-info').innerText = `${info.englishNameTranslation} • ${translateType(info.revelationType)} • ${info.numberOfAyahs} Ayahs`;
 
-    // Update Reciter Button
-    updateReciterButtonUI();
-    updateContinuousPlayUI();
+    // Ensure Select is populated and value is correct
+    populateReciterSelect();
 
     // Ayahs
     ayahsContainer.innerHTML = '';
+
+    // Apply current view options (re-apply class to container just in case)
+    initViewOptions();
 
     // Navigation Buttons
     const prevBtn = document.getElementById('prev-surah-btn');
@@ -241,7 +260,6 @@ function renderSurahView(number) {
     for (let i = 0; i < ayahCount; i++) {
         const ar = currentSurah.arabic[i];
         const de = currentSurah.german[i];
-        // au is not used directly in HTML generation, audio logic handles it via indices
 
         let arText = ar.text;
 
@@ -263,10 +281,10 @@ function renderSurahView(number) {
             </div>
 
             <div class="mt-4 border-t border-gray-100 dark:border-gray-700 pt-4">
-                <p class="text-gray-600 dark:text-gray-300 text-sm md:text-base mb-3">${de.text}</p>
+                <p class="german-text text-gray-600 dark:text-gray-300 text-sm md:text-base mb-3">${de.text}</p>
 
                 <div class="flex justify-end">
-                    <button onclick="playSingleAyah(${i})" class="text-primary-500 hover:text-primary-600 dark:text-primary-400 dark:hover:text-primary-300 text-sm flex items-center gap-2 px-3 py-1 rounded-full hover:bg-primary-50 dark:hover:bg-primary-900/20 transition">
+                    <button onclick="playSingleAyah(${i})" class="audio-btn text-primary-500 hover:text-primary-600 dark:text-primary-400 dark:hover:text-primary-300 text-sm flex items-center gap-2 px-3 py-1 rounded-full hover:bg-primary-50 dark:hover:bg-primary-900/20 transition">
                         <i class="fas fa-play"></i> Anhören
                     </button>
                 </div>
@@ -286,40 +304,6 @@ function playSingleAyah(index) {
 }
 
 function playFullSurah() {
-    if (continuousPlay) {
-        stopAudio(); // Reset state
-        tryingSingleFile = true;
-
-        const surahNum = currentSurah.details.number;
-        // Use currentReciter or fallback if somehow missing
-        const reciterId = currentReciter || 'ar.mahermuaiqly';
-        const url = `https://cdn.islamic.network/quran/audio-surah/128/${reciterId}/${surahNum}.mp3`;
-
-        globalAudio.src = url;
-        const playPromise = globalAudio.play();
-
-        if (playPromise !== undefined) {
-             playPromise
-                .then(() => {
-                    updateAudioUI(true);
-                    // Update Info
-                    const info = document.getElementById('playing-info');
-                    if(info) info.innerText = `Volle Surah`;
-                })
-                .catch(e => {
-                    console.warn("Audio playback failed (Promise Rejected)", e);
-                    if (tryingSingleFile) {
-                        tryingSingleFile = false;
-                        fallbackToQueue();
-                    }
-                });
-        }
-    } else {
-        fallbackToQueue();
-    }
-}
-
-function fallbackToQueue() {
     // Setup queue with all ayahs
     const indices = Array.from({length: currentSurah.arabic.length}, (_, i) => i);
     setupQueue(indices);
@@ -337,18 +321,15 @@ function setupQueue(indices) {
 }
 
 function playNextInQueue() {
-    // If we were trying single file and it ended, we are done.
-    if (tryingSingleFile) {
-        stopAudio();
-        return;
-    }
-
     currentAudioIndex++;
 
     if (currentAudioIndex < audioQueue.length) {
         const item = audioQueue[currentAudioIndex];
         globalAudio.src = item.url;
-        globalAudio.play();
+        globalAudio.play().catch(e => {
+            console.error("Play error", e);
+            playNextInQueue(); // Try next on error
+        });
 
         // Highlight
         highlightAyah(item.ayahNumber);
@@ -360,7 +341,6 @@ function playNextInQueue() {
 }
 
 function stopAudio() {
-    tryingSingleFile = false;
     globalAudio.pause();
     globalAudio.currentTime = 0;
     currentAudioIndex = -1;
@@ -377,6 +357,7 @@ function highlightAyah(globalAyahNumber) {
         el.classList.remove('border-transparent');
 
         // Scroll into view nicely
+        // Using block: 'center' to keep it visible under sticky headers
         el.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
 }
@@ -423,43 +404,32 @@ function updatePlayerInfo(ayahNum) {
     if (info) info.innerText = `Ayah ${ayahNum}`;
 }
 
-// --- Reciter & Settings Logic ---
+// --- Reciter Logic ---
 
-async function openReciterSelection() {
-    const modal = document.getElementById('settings-modal');
-    modal.classList.remove('hidden');
+function changeReciter(reciterId) {
+    if (reciterId === currentReciter) return;
 
-    const select = document.getElementById('reciter-select');
+    currentReciter = reciterId;
+    localStorage.setItem('quran_reciter', currentReciter);
 
-    if (recitersList.length === 0) {
-        if(select) select.innerHTML = '<option>Lade Rezitatoren...</option>';
-
-        const success = await fetchReciters();
-        if (success) {
-            populateReciterSelect();
-        } else {
-            if(select) select.innerHTML = '<option>Fehler beim Laden der Liste</option>';
-        }
-    } else {
-        populateReciterSelect();
+    // Refresh if surah loaded
+    if (currentSurah) {
+        loadSurah(currentSurah.details.number);
     }
-}
-
-function closeSettings() {
-    document.getElementById('settings-modal').classList.add('hidden');
 }
 
 async function fetchReciters() {
     try {
+        // If already loaded, don't fetch again
+        if (recitersList.length > 0) return true;
+
         const response = await fetch('https://api.alquran.cloud/v1/edition/format/audio');
         const data = await response.json();
         if (data.code === 200) {
             // Filter: Verse by Verse only
             recitersList = data.data.filter(r => r.type === 'versebyverse');
-
             // Sort by name
             recitersList.sort((a, b) => a.englishName.localeCompare(b.englishName));
-
             return true;
         }
         return false;
@@ -472,6 +442,15 @@ async function fetchReciters() {
 function populateReciterSelect() {
     const select = document.getElementById('reciter-select');
     if (!select) return;
+
+    // Save current selection to restore if needed or verify
+    const currentSelection = select.value;
+
+    if (recitersList.length === 0) {
+        // If not loaded yet, wait or keep as is
+        return;
+    }
+
     select.innerHTML = '';
 
     recitersList.forEach(reciter => {
@@ -481,45 +460,4 @@ function populateReciterSelect() {
         if (reciter.identifier === currentReciter) option.selected = true;
         select.appendChild(option);
     });
-}
-
-function updateReciterButtonUI() {
-    const nameEl = document.getElementById('current-reciter-name');
-    if (!nameEl) return;
-
-    if (recitersList.length > 0) {
-        const reciter = recitersList.find(r => r.identifier === currentReciter);
-        nameEl.innerText = reciter ? reciter.englishName : currentReciter;
-    } else {
-        nameEl.innerText = 'Rezitator...';
-    }
-}
-
-function toggleContinuousPlay(isChecked) {
-    continuousPlay = isChecked;
-    localStorage.setItem('quran_continuous', continuousPlay);
-    updateContinuousPlayUI();
-}
-
-function updateContinuousPlayUI() {
-    const headerToggle = document.getElementById('continuous-play-header');
-    const stickyToggle = document.getElementById('continuous-play-sticky');
-    if (headerToggle) headerToggle.checked = continuousPlay;
-    if (stickyToggle) stickyToggle.checked = continuousPlay;
-}
-
-function saveSettings() {
-    const newReciter = document.getElementById('reciter-select').value;
-
-    const changed = newReciter !== currentReciter;
-    currentReciter = newReciter;
-    localStorage.setItem('quran_reciter', currentReciter);
-
-    closeSettings();
-    updateReciterButtonUI();
-
-    if (changed && currentSurah) {
-        // Reload surah to apply changes
-        loadSurah(currentSurah.details.number);
-    }
 }
