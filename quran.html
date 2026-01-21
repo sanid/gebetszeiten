@@ -93,6 +93,11 @@
             font-family: 'Amiri', serif;
             line-height: 2.5;
         }
+
+        /* Reading Mode Styles */
+        .hide-arabic .arabic-text { display: none !important; }
+        .hide-german .german-text { display: none !important; }
+        .hide-audio .audio-btn { display: none !important; }
     </style>
 </head>
 <body class="text-gray-800 dark:text-gray-200 antialiased min-h-screen flex flex-col">
@@ -159,21 +164,46 @@
                         <h3 id="detail-surah-name-en" class="text-xl font-bold mb-1"></h3>
                         <p id="detail-surah-info" class="text-sm text-gray-500 dark:text-gray-400 mb-6"></p>
 
-                        <!-- Reciter & Controls -->
-                        <div class="flex flex-col items-center gap-4 mb-6">
-                            <button onclick="openReciterSelection()" class="text-sm bg-slate-100 dark:bg-slate-800/50 px-4 py-2 rounded-full flex items-center gap-2 hover:bg-slate-200 dark:hover:bg-slate-700 transition">
-                                <i class="fas fa-microphone text-primary-500"></i>
-                                <span id="current-reciter-name">Lade...</span>
-                                <i class="fas fa-chevron-down text-xs text-gray-400 ml-1"></i>
-                            </button>
+                        <!-- Reciter & View Settings -->
+                        <div class="flex flex-col items-center gap-6 mb-8 w-full max-w-lg mx-auto">
 
-                            <div class="flex items-center gap-2">
-                                <label class="relative inline-flex items-center cursor-pointer">
-                                    <input type="checkbox" id="continuous-play-header" class="sr-only peer" onchange="toggleContinuousPlay(this.checked)">
-                                    <div class="w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-primary-500"></div>
-                                    <span class="ml-2 text-sm text-gray-600 dark:text-gray-300">Durchgängig</span>
-                                </label>
+                            <!-- Reciter Select -->
+                            <div class="w-full">
+                                <label class="text-xs text-gray-500 uppercase font-bold tracking-wider mb-2 block text-center">Rezitator</label>
+                                <div class="relative">
+                                    <select id="reciter-select" onchange="changeReciter(this.value)" class="w-full bg-slate-100 dark:bg-slate-800/50 border border-transparent focus:border-primary-500 rounded-lg p-3 text-gray-800 dark:text-white transition outline-none appearance-none text-center cursor-pointer">
+                                        <option value="ar.mahermuaiqly">Lade Rezitatoren...</option>
+                                    </select>
+                                    <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-gray-500">
+                                        <i class="fas fa-chevron-down text-xs"></i>
+                                    </div>
+                                </div>
                             </div>
+
+                            <!-- Reading Mode Toggles -->
+                            <div class="w-full">
+                                <label class="text-xs text-gray-500 uppercase font-bold tracking-wider mb-3 block text-center">Anzeigeoptionen</label>
+                                <div class="flex flex-wrap justify-center gap-3">
+                                    <!-- Arabic Toggle -->
+                                    <label class="cursor-pointer select-none bg-slate-100 dark:bg-slate-800/50 px-4 py-2 rounded-full flex items-center gap-2 transition hover:bg-slate-200 dark:hover:bg-slate-700">
+                                        <input type="checkbox" id="toggle-arabic" class="accent-primary-500" checked onchange="toggleViewOption('arabic', this.checked)">
+                                        <span class="text-sm font-medium">Arabisch</span>
+                                    </label>
+
+                                    <!-- German Toggle -->
+                                    <label class="cursor-pointer select-none bg-slate-100 dark:bg-slate-800/50 px-4 py-2 rounded-full flex items-center gap-2 transition hover:bg-slate-200 dark:hover:bg-slate-700">
+                                        <input type="checkbox" id="toggle-german" class="accent-primary-500" checked onchange="toggleViewOption('german', this.checked)">
+                                        <span class="text-sm font-medium">Deutsch</span>
+                                    </label>
+
+                                    <!-- Audio Toggle -->
+                                    <label class="cursor-pointer select-none bg-slate-100 dark:bg-slate-800/50 px-4 py-2 rounded-full flex items-center gap-2 transition hover:bg-slate-200 dark:hover:bg-slate-700">
+                                        <input type="checkbox" id="toggle-audio" class="accent-primary-500" checked onchange="toggleViewOption('audio', this.checked)">
+                                        <span class="text-sm font-medium">Audio</span>
+                                    </label>
+                                </div>
+                            </div>
+
                         </div>
 
                         <div class="flex justify-center gap-4">
@@ -199,11 +229,6 @@
                         </div>
 
                         <div class="flex items-center gap-3">
-                             <label class="relative inline-flex items-center cursor-pointer" title="Durchgängig abspielen">
-                                <input type="checkbox" id="continuous-play-sticky" class="sr-only peer" onchange="toggleContinuousPlay(this.checked)">
-                                <div class="w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-primary-500"></div>
-                            </label>
-
                             <button onclick="stopAudio()" class="w-8 h-8 rounded-full bg-red-100 dark:bg-red-900/30 text-red-500 flex items-center justify-center hover:bg-red-200 transition">
                                 <i class="fas fa-stop text-xs"></i>
                             </button>
@@ -231,35 +256,6 @@
         </div>
     </main>
 
-    <!-- Settings Modal (Now Reciter Selection) -->
-    <div id="settings-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center bg-black/50 backdrop-blur-sm animate-fade-in p-4">
-        <div class="glass-card w-full max-w-md p-6 rounded-2xl shadow-2xl relative">
-            <button onclick="closeSettings()" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">
-                <i class="fas fa-times text-xl"></i>
-            </button>
-
-            <h2 class="text-xl font-bold mb-6 text-gray-800 dark:text-white flex items-center gap-2">
-                <i class="fas fa-microphone text-primary-500"></i> Rezitator Auswahl
-            </h2>
-
-            <div class="space-y-6">
-                <!-- Reciter Selection -->
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Rezitator</label>
-                    <select id="reciter-select" class="w-full bg-slate-100 dark:bg-slate-800 border border-transparent focus:border-primary-500 rounded-lg p-3 text-gray-800 dark:text-white transition outline-none" size="10">
-                        <option value="ar.mahermuaiqly">Lade Rezitatoren...</option>
-                    </select>
-                    <p class="text-xs text-gray-500 mt-2">Wähle einen Rezitator aus der Liste.</p>
-                </div>
-            </div>
-
-            <div class="mt-8 pt-4 border-t border-gray-200 dark:border-gray-700 flex justify-end">
-                <button onclick="saveSettings()" class="bg-primary-500 hover:bg-primary-600 text-white px-6 py-2 rounded-lg shadow-lg transition">
-                    Speichern
-                </button>
-            </div>
-        </div>
-    </div>
 
     <script src="theme.js"></script>
     <script src="transition.js"></script>
