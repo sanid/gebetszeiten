@@ -15,6 +15,123 @@ const revelationTypeTranslations = {
     'Medinan': 'Medinensisch'
 };
 
+const SURAH_NAMES_DE = {
+    1: "Die Eröffnung",
+    2: "Die Kuh",
+    3: "Die Sippe Imrans",
+    4: "Die Frauen",
+    5: "Der Tisch",
+    6: "Das Vieh",
+    7: "Die Höhen",
+    8: "Die Beute",
+    9: "Die Reue",
+    10: "Jona",
+    11: "Hud",
+    12: "Josef",
+    13: "Der Donner",
+    14: "Abraham",
+    15: "Al-Hidschr",
+    16: "Die Bienen",
+    17: "Die Nachtreise",
+    18: "Die Höhle",
+    19: "Maria",
+    20: "Ta Ha",
+    21: "Die Propheten",
+    22: "Die Pilgerfahrt",
+    23: "Die Gläubigen",
+    24: "Das Licht",
+    25: "Die Unterscheidung",
+    26: "Die Dichter",
+    27: "Die Ameisen",
+    28: "Die Geschichte",
+    29: "Die Spinne",
+    30: "Die Römer",
+    31: "Luqman",
+    32: "Die Anbetung",
+    33: "Die Parteien",
+    34: "Saba",
+    35: "Der Schöpfer",
+    36: "Ya Sin",
+    37: "Die Riegen",
+    38: "Sad",
+    39: "Die Scharen",
+    40: "Der Vergebende",
+    41: "Erklärt",
+    42: "Die Beratung",
+    43: "Der Prunk",
+    44: "Der Rauch",
+    45: "Die Kniende",
+    46: "Die Dünen",
+    47: "Mohammed",
+    48: "Der Sieg",
+    49: "Die Zimmer",
+    50: "Qaf",
+    51: "Die Aufwirbelnden",
+    52: "Der Berg",
+    53: "Der Stern",
+    54: "Der Mond",
+    55: "Der Allerbarmer",
+    56: "Das Ereignis",
+    57: "Das Eisen",
+    58: "Der Streit",
+    59: "Die Versammlung",
+    60: "Die Geprüfte",
+    61: "Die Reihe",
+    62: "Der Freitag",
+    63: "Die Heuchler",
+    64: "Der gegenseitige Betrug",
+    65: "Die Scheidung",
+    66: "Das Verbot",
+    67: "Die Herrschaft",
+    68: "Das Schreibrohr",
+    69: "Die Unausweichliche",
+    70: "Die Stufen",
+    71: "Noah",
+    72: "Die Dschinn",
+    73: "Der Eingehüllte",
+    74: "Der Bedeckte",
+    75: "Die Auferstehung",
+    76: "Der Mensch",
+    77: "Die Gesandten",
+    78: "Die Ankündigung",
+    79: "Die Ausziehenden",
+    80: "Er runzelte die Stirn",
+    81: "Das Umnachten",
+    82: "Das Spalten",
+    83: "Die das Maß verkürzenden",
+    84: "Das Zerreißen",
+    85: "Die Türme",
+    86: "Der Nachtstern",
+    87: "Der Höchste",
+    88: "Die Überwältigende",
+    89: "Die Morgenröte",
+    90: "Die Stadt",
+    91: "Die Sonne",
+    92: "Die Nacht",
+    93: "Der Morgen",
+    94: "Das Weiten",
+    95: "Die Feige",
+    96: "Das Anhängsel",
+    97: "Die Bestimmung",
+    98: "Der klare Beweis",
+    99: "Das Beben",
+    100: "Die Rennenden",
+    101: "Das Pochen",
+    102: "Die Vermehrung",
+    103: "Das Zeitalter",
+    104: "Der Stichler",
+    105: "Der Elefant",
+    106: "Die Quraisch",
+    107: "Die Hilfeleistung",
+    108: "Die Fülle",
+    109: "Die Ungläubigen",
+    110: "Die Hilfe",
+    111: "Die Palmfasern",
+    112: "Die Aufrichtigkeit",
+    113: "Das Morgengrauen",
+    114: "Die Menschen"
+};
+
 const BISMILLAH_AR = "بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ";
 const BISMILLAH_DE = "Im Namen Allahs, des Allerbarmers, des Barmherzigen";
 
@@ -95,6 +212,12 @@ async function fetchSurahList() {
 
         if (data.code === 200) {
             allSurahs = data.data;
+            // Overwrite with German names
+            allSurahs.forEach(s => {
+                if (SURAH_NAMES_DE[s.number]) {
+                    s.englishNameTranslation = SURAH_NAMES_DE[s.number];
+                }
+            });
             renderSurahList(allSurahs);
             showView('list');
         } else {
@@ -193,6 +316,11 @@ async function loadSurah(number) {
                 german: data.data[1].ayahs,
                 audio: data.data[2].ayahs
             };
+
+            // Use German name
+            if (SURAH_NAMES_DE[number]) {
+                currentSurah.details.englishNameTranslation = SURAH_NAMES_DE[number];
+            }
 
             renderSurahView(number);
             window.location.hash = `surah/${number}`;
@@ -353,7 +481,7 @@ function highlightAyah(globalAyahNumber) {
     removeHighlights();
     const el = document.getElementById(`ayah-${globalAyahNumber}`);
     if (el) {
-        el.classList.add('border-primary-500', 'bg-primary-50', 'dark:bg-slate-800');
+        el.classList.add('border-primary-500', 'bg-primary-50', 'dark:bg-slate-700', 'dark:border-primary-400');
         el.classList.remove('border-transparent');
 
         // Scroll into view nicely
@@ -365,7 +493,7 @@ function highlightAyah(globalAyahNumber) {
 function removeHighlights() {
     const highlighted = document.querySelectorAll('.border-primary-500');
     highlighted.forEach(el => {
-        el.classList.remove('border-primary-500', 'bg-primary-50', 'dark:bg-slate-800');
+        el.classList.remove('border-primary-500', 'bg-primary-50', 'dark:bg-slate-700', 'dark:border-primary-400');
         el.classList.add('border-transparent');
     });
 }
