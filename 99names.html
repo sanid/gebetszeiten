@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+    <!-- SEO Meta Tags -->
+    <title>99 Namen Allahs - Gebetszeiten App</title>
+    <meta name="description" content="Die 99 schönen Namen Allahs (Asma ul Husna) mit arabischer Schreibweise, Transliteration und deutscher Bedeutung.">
+    <meta name="robots" content="noindex, follow">
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            50: 'var(--color-primary-50)',
+                            100: 'var(--color-primary-100)',
+                            200: 'var(--color-primary-200)',
+                            400: 'var(--color-primary-400)',
+                            500: 'var(--color-primary-500)',
+                            600: 'var(--color-primary-600)',
+                            700: 'var(--color-primary-700)',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Arabic Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --color-primary-50: #ecfdf5;
+            --color-primary-100: #d1fae5;
+            --color-primary-200: #a7f3d0;
+            --color-primary-400: #34d399;
+            --color-primary-500: #10b981;
+            --color-primary-600: #059669;
+            --color-primary-700: #047857;
+            --color-primary-shadow: rgba(16, 185, 129, 0.3);
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6;
+            overscroll-behavior-y: none;
+            transition: background-color 0.3s ease;
+        }
+        html.dark body {
+            background-color: #0f172a;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: background-color 0.3s ease, border-color 0.3s ease;
+        }
+        html.dark .glass-card {
+            background: rgba(30, 41, 59, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .arabic-text {
+            font-family: 'Amiri', serif;
+        }
+    </style>
+</head>
+<body class="text-gray-800 dark:text-gray-200 antialiased min-h-screen flex flex-col">
+
+    <!-- Header / Hero Section -->
+    <header class="bg-slate-900 text-white pb-12 pt-8 px-4 relative overflow-hidden shadow-md">
+        <div class="absolute top-0 left-0 w-full h-full opacity-10">
+            <i class="fas fa-mosque absolute -bottom-10 -right-10 text-9xl"></i>
+            <i class="far fa-star absolute top-10 left-10 text-4xl animate-pulse"></i>
+        </div>
+
+        <div class="max-w-4xl mx-auto relative z-10">
+            <div class="flex justify-between items-center mb-6">
+                <a href="index.html" class="bg-slate-800 hover:bg-slate-700 py-2 px-4 rounded-full transition flex items-center shadow-lg border border-slate-700 text-sm font-medium">
+                    <i class="fas fa-arrow-left mr-2"></i> Zurück
+                </a>
+
+                <div class="flex items-center gap-2">
+                    <button onclick="toggleSettings()" class="bg-slate-800 hover:bg-slate-700 p-2 rounded-full transition w-10 h-10 flex items-center justify-center shadow-lg border border-slate-700" title="Einstellungen">
+                        <i class="fas fa-cog text-slate-300 hover:text-white transition-colors"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="text-center">
+                <h1 class="text-3xl md:text-4xl font-bold tracking-tight mb-2">99 Namen Allahs</h1>
+                <p class="text-slate-400 text-sm md:text-base">Asma ul Husna - Die schönsten Namen</p>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="flex-grow px-4 -mt-6 relative z-20 pb-10">
+        <div class="max-w-4xl mx-auto space-y-6">
+
+            <!-- Settings Panel (Hidden by default) -->
+            <div id="settings-panel" class="hidden glass-card rounded-2xl shadow-xl p-6 mb-6 animate-fade-in ring-1 ring-black/5 dark:ring-white/10">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="font-bold text-lg text-gray-800 dark:text-gray-100">Design Einstellungen</h3>
+                    <button onclick="toggleSettings()" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"><i class="fas fa-times"></i></button>
+                </div>
+
+                <!-- Theme Settings -->
+                <div class="mb-6">
+                    <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Design</label>
+
+                    <!-- Dark Mode Toggle -->
+                    <div class="flex items-center justify-between mb-4">
+                        <span class="text-sm text-gray-700 dark:text-gray-300">Dunkelmodus</span>
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" id="dark-mode-toggle" class="sr-only peer" onchange="window.toggleDarkMode()">
+                            <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-slate-700 dark:bg-gray-700 dark:peer-checked:bg-primary-500"></div>
+                        </label>
+                    </div>
+
+                    <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Farbthema</label>
+                    <div class="flex gap-3 justify-start flex-wrap">
+                        <button onclick="window.setTheme('emerald')" class="w-8 h-8 rounded-full bg-[#10b981] hover:ring-2 ring-offset-2 ring-[#10b981] transition-transform hover:scale-110 shadow-sm" aria-label="Emerald Theme"></button>
+                        <button onclick="window.setTheme('blue')" class="w-8 h-8 rounded-full bg-[#3b82f6] hover:ring-2 ring-offset-2 ring-[#3b82f6] transition-transform hover:scale-110 shadow-sm" aria-label="Blue Theme"></button>
+                        <button onclick="window.setTheme('purple')" class="w-8 h-8 rounded-full bg-[#8b5cf6] hover:ring-2 ring-offset-2 ring-[#8b5cf6] transition-transform hover:scale-110 shadow-sm" aria-label="Purple Theme"></button>
+                        <button onclick="window.setTheme('amber')" class="w-8 h-8 rounded-full bg-[#f59e0b] hover:ring-2 ring-offset-2 ring-[#f59e0b] transition-transform hover:scale-110 shadow-sm" aria-label="Amber Theme"></button>
+                        <button onclick="window.setTheme('red')" class="w-8 h-8 rounded-full bg-[#ef4444] hover:ring-2 ring-offset-2 ring-[#ef4444] transition-transform hover:scale-110 shadow-sm" aria-label="Red Theme"></button>
+                        <button onclick="window.setTheme('yellow')" class="w-8 h-8 rounded-full bg-[#eab308] hover:ring-2 ring-offset-2 ring-[#eab308] transition-transform hover:scale-110 shadow-sm" aria-label="Yellow Theme"></button>
+                        <button onclick="window.setTheme('pink')" class="w-8 h-8 rounded-full bg-[#ec4899] hover:ring-2 ring-offset-2 ring-[#ec4899] transition-transform hover:scale-110 shadow-sm" aria-label="Pink Theme"></button>
+
+                        <!-- Color Picker -->
+                        <div class="relative w-8 h-8 rounded-full overflow-hidden hover:ring-2 ring-offset-2 ring-gray-400 transition-transform hover:scale-110 shadow-sm border border-gray-200">
+                            <input type="color" id="custom-color-picker" onchange="window.setCustomTheme(this.value)" class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[150%] h-[150%] p-0 border-0 cursor-pointer" title="Eigene Farbe wählen">
+                            <i class="fas fa-plus absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-gray-500 pointer-events-none text-xs"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Names Grid -->
+            <div id="names-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                <!-- Cards will be injected here -->
+                <div class="col-span-full text-center py-10">
+                    <div class="loader mx-auto"></div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-white dark:bg-slate-900 border-t border-gray-200 dark:border-gray-800 mt-auto py-6">
+        <div class="max-w-2xl mx-auto text-center px-4">
+            <p class="text-xs text-gray-400 dark:text-gray-600">&copy; 2026 Gebetszeiten App</p>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="names_data.js"></script>
+    <script src="theme.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Load theme
+            window.loadThemeSettings();
+
+            // Render names
+            renderNames();
+        });
+
+        function toggleSettings() {
+            const el = document.getElementById('settings-panel');
+            el.classList.toggle('hidden');
+        }
+
+        function renderNames() {
+            const container = document.getElementById('names-grid');
+            container.innerHTML = '';
+
+            if (typeof namesOfAllah === 'undefined' || !namesOfAllah.length) {
+                container.innerHTML = '<div class="col-span-full text-center text-red-500">Daten konnten nicht geladen werden.</div>';
+                return;
+            }
+
+            namesOfAllah.forEach(item => {
+                const card = `
+                    <div class="glass-card rounded-xl p-5 hover:scale-[1.02] transition-transform duration-300 relative overflow-hidden group">
+                        <div class="absolute top-0 right-0 p-2 opacity-10 group-hover:opacity-20 transition-opacity">
+                            <span class="text-6xl font-bold text-gray-500">${item.number}</span>
+                        </div>
+
+                        <div class="relative z-10 flex flex-col items-center text-center h-full justify-center">
+                            <h2 class="text-4xl md:text-5xl font-bold text-primary-600 dark:text-primary-400 mb-3 arabic-text py-2">${item.name}</h2>
+                            <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-1">${item.transliteration}</h3>
+                            <p class="text-sm text-gray-500 dark:text-gray-400 italic">${item.meaning}</p>
+                        </div>
+
+                        <div class="absolute bottom-2 right-3">
+                            <span class="text-xs font-mono text-gray-300 dark:text-gray-600">#${item.number}</span>
+                        </div>
+                    </div>
+                `;
+                container.innerHTML += card;
+            });
+        }
+    </script>
+</body>
+</html>
