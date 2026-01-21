@@ -820,12 +820,15 @@
                 const response = await fetch(url);
                 const json = await response.json();
 
-                if (json.code === 200) {
+                if (json.code === 200 && json.data) {
                     processAPIData(json.data);
+                } else {
+                     throw new Error("API returned no data or error code");
                 }
             } catch (e) {
                 console.error("API Error", e);
-                document.getElementById('prayer-list').innerHTML = '<div class="p-4 text-red-500 text-center">Fehler beim Laden der Daten.</div>';
+                document.getElementById('prayer-list').innerHTML = '<div class="p-4 text-red-500 text-center">Fehler beim Laden der Daten. <br><span class="text-xs">Bitte überprüfe deine Internetverbindung oder versuche es später erneut.</span></div>';
+                document.getElementById('month-table-body').innerHTML = '<tr><td colspan="6" class="text-center py-4 text-red-500">Keine Daten verfügbar</td></tr>';
             }
         }
 
@@ -861,6 +864,21 @@
 
             // Die Kalendertabelle wird IMMER aktualisiert mit den geladenen Daten
             renderMonthTable(data);
+
+            // Fallback: Wenn wir keine Timings für "Heute" gefunden haben (z.B. Monat gewechselt oder Daten fehlen)
+            // und die Liste noch "Daten werden geladen..." anzeigt, dann leeren oder Hinweis zeigen.
+            const prayerList = document.getElementById('prayer-list');
+            if (prayerList.innerText.includes('Daten werden geladen')) {
+                 // Wir sind nicht im aktuellen Monat oder haben keine Daten für heute gefunden.
+                 // Zeige entweder die Daten des ersten Tages des Monats (als Beispiel) oder einen Hinweis.
+                 if (data.length > 0) {
+                     // Option: Zeige Daten vom 1. des geladenen Monats als "Vorschau" (optional)
+                     // Für jetzt: Einfach Hinweis
+                     prayerList.innerHTML = '<div class="p-4 text-center text-gray-500">Zeige Zeiten für ' + appState.viewDate.toLocaleDateString('de-DE', {month: 'long', year: 'numeric'}) + '</div>';
+                 } else {
+                     prayerList.innerHTML = '<div class="p-4 text-center text-gray-500">Keine Daten verfügbar.</div>';
+                 }
+            }
         }
 
         function parseTime(timeStr) {
