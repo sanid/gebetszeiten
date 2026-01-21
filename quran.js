@@ -4,6 +4,7 @@ let currentSurah = null;
 let isPlaying = false;
 let currentAudioIndex = -1;
 let audioQueue = []; // Array of objects { url, ayahNumber, id }
+let tryingSingleFile = false; // Flag to track single file playback attempt
 
 // --- Settings State ---
 let currentReciter = localStorage.getItem('quran_reciter') || 'ar.mahermuaiqly';
@@ -47,6 +48,21 @@ document.addEventListener('DOMContentLoaded', () => {
     globalAudio.addEventListener('ended', playNextInQueue);
     globalAudio.addEventListener('pause', () => updateAudioUI(false));
     globalAudio.addEventListener('play', () => updateAudioUI(true));
+
+    // Handle Audio Errors (e.g. 404 on single file)
+    globalAudio.addEventListener('error', (e) => {
+        if (tryingSingleFile) {
+            console.warn("Audio error detected during single file playback attempt", e);
+            tryingSingleFile = false;
+            fallbackToQueue();
+        }
+    });
+
+    // Initialize UI Controls
+    updateContinuousPlayUI();
+
+    // Load reciters list in background to populate button text
+    fetchReciters().then(() => updateReciterButtonUI());
 });
 
 // --- Surah List Logic ---
@@ -182,6 +198,10 @@ function renderSurahView(number) {
     document.getElementById('detail-surah-name-en').innerText = info.englishName;
     document.getElementById('detail-surah-info').innerText = `${info.englishNameTranslation} • ${translateType(info.revelationType)} • ${info.numberOfAyahs} Ayahs`;
 
+    // Update Reciter Button
+    updateReciterButtonUI();
+    updateContinuousPlayUI();
+
     // Ayahs
     ayahsContainer.innerHTML = '';
 
@@ -194,11 +214,6 @@ function renderSurahView(number) {
 
     nextBtn.disabled = number >= 114;
     nextBtn.onclick = () => loadSurah(number + 1);
-
-    // Bismillah handling (skip for Surah 1 and 9 usually, but API returns it as Ayah 1 for Surah 1.
-    // For others, Bismillah might be separate or part of text.
-    // quran-uthmani usually includes Bismillah in text for Ayah 1 except Surah 1 & 9).
-    // We just render what API gives.
 
     const ayahCount = currentSurah.arabic.length;
 
@@ -245,6 +260,7 @@ function playSingleAyah(index) {
 function playFullSurah() {
     if (continuousPlay) {
         stopAudio(); // Reset state
+        tryingSingleFile = true;
 
         const surahNum = currentSurah.details.number;
         // Use currentReciter or fallback if somehow missing
@@ -252,27 +268,34 @@ function playFullSurah() {
         const url = `https://cdn.islamic.network/quran/audio-surah/128/${reciterId}/${surahNum}.mp3`;
 
         globalAudio.src = url;
-        globalAudio.play()
-            .catch(e => {
-                console.error("Audio playback failed", e);
-                alert("Audio konnte nicht abgespielt werden.");
-                updateAudioUI(false);
-            });
+        const playPromise = globalAudio.play();
 
-        updateAudioUI(true);
-
-        // Update Info
-        const info = document.getElementById('playing-info');
-        info.innerText = `Volle Surah`;
-
-        // Note: The 'ended' event will trigger playNextInQueue,
-        // which sees empty queue and calls stopAudio(), correctly resetting UI.
+        if (playPromise !== undefined) {
+             playPromise
+                .then(() => {
+                    updateAudioUI(true);
+                    // Update Info
+                    const info = document.getElementById('playing-info');
+                    if(info) info.innerText = `Volle Surah`;
+                })
+                .catch(e => {
+                    console.warn("Audio playback failed (Promise Rejected)", e);
+                    if (tryingSingleFile) {
+                        tryingSingleFile = false;
+                        fallbackToQueue();
+                    }
+                });
+        }
     } else {
-        // Setup queue with all ayahs
-        const indices = Array.from({length: currentSurah.arabic.length}, (_, i) => i);
-        setupQueue(indices);
-        playNextInQueue();
+        fallbackToQueue();
     }
+}
+
+function fallbackToQueue() {
+    // Setup queue with all ayahs
+    const indices = Array.from({length: currentSurah.arabic.length}, (_, i) => i);
+    setupQueue(indices);
+    playNextInQueue();
 }
 
 function setupQueue(indices) {
@@ -286,6 +309,12 @@ function setupQueue(indices) {
 }
 
 function playNextInQueue() {
+    // If we were trying single file and it ended, we are done.
+    if (tryingSingleFile) {
+        stopAudio();
+        return;
+    }
+
     currentAudioIndex++;
 
     if (currentAudioIndex < audioQueue.length) {
@@ -303,6 +332,7 @@ function playNextInQueue() {
 }
 
 function stopAudio() {
+    tryingSingleFile = false;
     globalAudio.pause();
     globalAudio.currentTime = 0;
     currentAudioIndex = -1;
@@ -340,35 +370,36 @@ function updateAudioUI(playing) {
         statusEl.classList.add('flex');
 
         // Update main play button to stop
-        playBtn.innerHTML = '<i class="fas fa-stop"></i> Stop';
-        playBtn.onclick = stopAudio;
-        playBtn.classList.add('bg-red-500', 'hover:bg-red-600');
-        playBtn.classList.remove('bg-primary-500', 'hover:bg-primary-600');
+        if (playBtn) {
+            playBtn.innerHTML = '<i class="fas fa-stop"></i> Stop';
+            playBtn.onclick = stopAudio;
+            playBtn.classList.add('bg-red-500', 'hover:bg-red-600');
+            playBtn.classList.remove('bg-primary-500', 'hover:bg-primary-600');
+        }
     } else {
         statusEl.classList.add('hidden');
         statusEl.classList.remove('flex');
 
         // Reset main play button
-        playBtn.innerHTML = '<i class="fas fa-play"></i> Surah Abspielen';
-        playBtn.onclick = playFullSurah;
-        playBtn.classList.remove('bg-red-500', 'hover:bg-red-600');
-        playBtn.classList.add('bg-primary-500', 'hover:bg-primary-600');
+        if (playBtn) {
+            playBtn.innerHTML = '<i class="fas fa-play"></i> Surah Abspielen';
+            playBtn.onclick = playFullSurah;
+            playBtn.classList.remove('bg-red-500', 'hover:bg-red-600');
+            playBtn.classList.add('bg-primary-500', 'hover:bg-primary-600');
+        }
     }
 }
 
 function updatePlayerInfo(ayahNum) {
     const info = document.getElementById('playing-info');
-    info.innerText = `Ayah ${ayahNum}`;
+    if (info) info.innerText = `Ayah ${ayahNum}`;
 }
 
-// --- Settings Logic ---
+// --- Reciter & Settings Logic ---
 
-async function openSettings() {
+async function openReciterSelection() {
     const modal = document.getElementById('settings-modal');
     modal.classList.remove('hidden');
-
-    // Set current values
-    document.getElementById('continuous-play-toggle').checked = continuousPlay;
 
     if (recitersList.length === 0) {
         await fetchReciters();
@@ -383,7 +414,7 @@ function closeSettings() {
 
 async function fetchReciters() {
     const select = document.getElementById('reciter-select');
-    select.innerHTML = '<option>Lade...</option>';
+    if(select && select.children.length <= 1) select.innerHTML = '<option>Lade...</option>';
 
     try {
         const response = await fetch('https://api.alquran.cloud/v1/edition/format/audio');
@@ -396,15 +427,17 @@ async function fetchReciters() {
             recitersList.sort((a, b) => a.englishName.localeCompare(b.englishName));
 
             populateReciterSelect();
+            updateReciterButtonUI();
         }
     } catch (e) {
         console.error(e);
-        select.innerHTML = '<option>Fehler beim Laden</option>';
+        if(select) select.innerHTML = '<option>Fehler beim Laden</option>';
     }
 }
 
 function populateReciterSelect() {
     const select = document.getElementById('reciter-select');
+    if (!select) return;
     select.innerHTML = '';
 
     recitersList.forEach(reciter => {
@@ -416,19 +449,40 @@ function populateReciterSelect() {
     });
 }
 
+function updateReciterButtonUI() {
+    const nameEl = document.getElementById('current-reciter-name');
+    if (!nameEl) return;
+
+    if (recitersList.length > 0) {
+        const reciter = recitersList.find(r => r.identifier === currentReciter);
+        nameEl.innerText = reciter ? reciter.englishName : currentReciter;
+    } else {
+        nameEl.innerText = 'Rezitator...';
+    }
+}
+
+function toggleContinuousPlay(isChecked) {
+    continuousPlay = isChecked;
+    localStorage.setItem('quran_continuous', continuousPlay);
+    updateContinuousPlayUI();
+}
+
+function updateContinuousPlayUI() {
+    const headerToggle = document.getElementById('continuous-play-header');
+    const stickyToggle = document.getElementById('continuous-play-sticky');
+    if (headerToggle) headerToggle.checked = continuousPlay;
+    if (stickyToggle) stickyToggle.checked = continuousPlay;
+}
+
 function saveSettings() {
     const newReciter = document.getElementById('reciter-select').value;
-    const newContinuous = document.getElementById('continuous-play-toggle').checked;
 
-    const changed = newReciter !== currentReciter || newContinuous !== continuousPlay;
-
+    const changed = newReciter !== currentReciter;
     currentReciter = newReciter;
-    continuousPlay = newContinuous;
-
     localStorage.setItem('quran_reciter', currentReciter);
-    localStorage.setItem('quran_continuous', continuousPlay);
 
     closeSettings();
+    updateReciterButtonUI();
 
     if (changed && currentSurah) {
         // Reload surah to apply changes

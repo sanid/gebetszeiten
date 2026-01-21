@@ -114,9 +114,7 @@
                 <h1 class="text-2xl font-bold tracking-tight">Der Heilige Koran</h1>
                 <p class="text-slate-400 text-sm">Lesen & Hören</p>
             </div>
-            <button onclick="openSettings()" class="bg-slate-800 hover:bg-slate-700 p-2 rounded-full transition w-10 h-10 flex items-center justify-center shadow-lg border border-slate-700 text-white ml-auto">
-                <i class="fas fa-cog"></i>
-            </button>
+            <!-- Removed global settings button -->
         </div>
     </header>
 
@@ -161,6 +159,23 @@
                         <h3 id="detail-surah-name-en" class="text-xl font-bold mb-1"></h3>
                         <p id="detail-surah-info" class="text-sm text-gray-500 dark:text-gray-400 mb-6"></p>
 
+                        <!-- Reciter & Controls -->
+                        <div class="flex flex-col items-center gap-4 mb-6">
+                            <button onclick="openReciterSelection()" class="text-sm bg-slate-100 dark:bg-slate-800/50 px-4 py-2 rounded-full flex items-center gap-2 hover:bg-slate-200 dark:hover:bg-slate-700 transition">
+                                <i class="fas fa-microphone text-primary-500"></i>
+                                <span id="current-reciter-name">Lade...</span>
+                                <i class="fas fa-chevron-down text-xs text-gray-400 ml-1"></i>
+                            </button>
+
+                            <div class="flex items-center gap-2">
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" id="continuous-play-header" class="sr-only peer" onchange="toggleContinuousPlay(this.checked)">
+                                    <div class="w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-primary-500"></div>
+                                    <span class="ml-2 text-sm text-gray-600 dark:text-gray-300">Durchgängig</span>
+                                </label>
+                            </div>
+                        </div>
+
                         <div class="flex justify-center gap-4">
                              <button onclick="playFullSurah()" id="play-surah-btn" class="bg-primary-500 hover:bg-primary-600 text-white px-6 py-2 rounded-full shadow-lg transition flex items-center gap-2">
                                 <i class="fas fa-play"></i> Surah Abspielen
@@ -171,7 +186,7 @@
                         </div>
                     </div>
 
-                    <!-- Audio Player Control (Sticky if needed, or just status) -->
+                    <!-- Audio Player Control (Sticky) -->
                     <div id="audio-player-status" class="hidden sticky top-4 z-30 glass-card rounded-full px-4 py-2 shadow-xl mb-4 flex items-center justify-between animate-fade-in border border-primary-200 dark:border-primary-900">
                         <div class="flex items-center gap-3">
                             <div class="w-8 h-8 rounded-full bg-primary-100 dark:bg-primary-900 flex items-center justify-center text-primary-600">
@@ -182,9 +197,17 @@
                                 <p class="text-xs truncate max-w-[150px]" id="playing-info">Ayah...</p>
                             </div>
                         </div>
-                        <button onclick="stopAudio()" class="w-8 h-8 rounded-full bg-red-100 dark:bg-red-900/30 text-red-500 flex items-center justify-center hover:bg-red-200 transition">
-                            <i class="fas fa-stop text-xs"></i>
-                        </button>
+
+                        <div class="flex items-center gap-3">
+                             <label class="relative inline-flex items-center cursor-pointer" title="Durchgängig abspielen">
+                                <input type="checkbox" id="continuous-play-sticky" class="sr-only peer" onchange="toggleContinuousPlay(this.checked)">
+                                <div class="w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-primary-500"></div>
+                            </label>
+
+                            <button onclick="stopAudio()" class="w-8 h-8 rounded-full bg-red-100 dark:bg-red-900/30 text-red-500 flex items-center justify-center hover:bg-red-200 transition">
+                                <i class="fas fa-stop text-xs"></i>
+                            </button>
+                        </div>
                     </div>
 
                     <!-- Ayahs Container -->
@@ -208,7 +231,7 @@
         </div>
     </main>
 
-    <!-- Settings Modal -->
+    <!-- Settings Modal (Now Reciter Selection) -->
     <div id="settings-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center bg-black/50 backdrop-blur-sm animate-fade-in p-4">
         <div class="glass-card w-full max-w-md p-6 rounded-2xl shadow-2xl relative">
             <button onclick="closeSettings()" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">
@@ -216,28 +239,17 @@
             </button>
 
             <h2 class="text-xl font-bold mb-6 text-gray-800 dark:text-white flex items-center gap-2">
-                <i class="fas fa-sliders-h text-primary-500"></i> Einstellungen
+                <i class="fas fa-microphone text-primary-500"></i> Rezitator Auswahl
             </h2>
 
             <div class="space-y-6">
                 <!-- Reciter Selection -->
                 <div>
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Rezitator</label>
-                    <select id="reciter-select" class="w-full bg-slate-100 dark:bg-slate-800 border border-transparent focus:border-primary-500 rounded-lg p-3 text-gray-800 dark:text-white transition outline-none">
+                    <select id="reciter-select" class="w-full bg-slate-100 dark:bg-slate-800 border border-transparent focus:border-primary-500 rounded-lg p-3 text-gray-800 dark:text-white transition outline-none" size="10">
                         <option value="ar.mahermuaiqly">Lade Rezitatoren...</option>
                     </select>
-                </div>
-
-                <!-- Continuous Play Toggle -->
-                <div class="flex items-center justify-between">
-                    <div class="mr-4">
-                        <p class="font-medium text-gray-800 dark:text-white">Durchgängig abspielen</p>
-                        <p class="text-xs text-gray-500">Spielt die gesamte Surah als eine Datei (kein Text-Highlighting)</p>
-                    </div>
-                    <label class="relative inline-flex items-center cursor-pointer shrink-0">
-                        <input type="checkbox" id="continuous-play-toggle" class="sr-only peer">
-                        <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-500"></div>
-                    </label>
+                    <p class="text-xs text-gray-500 mt-2">Wähle einen Rezitator aus der Liste.</p>
                 </div>
             </div>
 
