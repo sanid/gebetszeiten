@@ -1,0 +1,122 @@
+/* Page Transitions CSS */
+
+/* Ensure smooth animations */
+body {
+    overflow-x: hidden; /* Prevent horizontal scrollbars during slides */
+    width: 100%;
+    /* Hardware acceleration hints */
+    will-change: transform, opacity;
+    /* Default state is visible, JS will handle the initial state */
+}
+
+/* Keyframes Definitions */
+
+/* Fade */
+@keyframes ptFadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes ptFadeOut {
+    from { opacity: 1; }
+    to { opacity: 0; }
+}
+
+/* Slide Forward (Enter from Right, Exit to Left) */
+@keyframes ptSlideInRight {
+    from {
+        opacity: 0;
+        transform: translate3d(30px, 0, 0); /* Subtle slide */
+    }
+    to {
+        opacity: 1;
+        transform: translate3d(0, 0, 0);
+    }
+}
+
+@keyframes ptSlideOutLeft {
+    from {
+        opacity: 1;
+        transform: translate3d(0, 0, 0);
+    }
+    to {
+        opacity: 0;
+        transform: translate3d(-30px, 0, 0);
+    }
+}
+
+/* Slide Backward (Enter from Left, Exit to Right) */
+@keyframes ptSlideInLeft {
+    from {
+        opacity: 0;
+        transform: translate3d(-30px, 0, 0);
+    }
+    to {
+        opacity: 1;
+        transform: translate3d(0, 0, 0);
+    }
+}
+
+@keyframes ptSlideOutRight {
+    from {
+        opacity: 1;
+        transform: translate3d(0, 0, 0);
+    }
+    to {
+        opacity: 0;
+        transform: translate3d(30px, 0, 0);
+    }
+}
+
+/* Scale & Fade (Modern iOS-like feel) */
+@keyframes ptScaleIn {
+    from {
+        opacity: 0;
+        transform: scale(0.98);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+@keyframes ptScaleOut {
+    from {
+        opacity: 1;
+        transform: scale(1);
+    }
+    to {
+        opacity: 0;
+        transform: scale(0.98);
+    }
+}
+
+
+/* Animation Classes applied by JS */
+
+/* Forward: Index -> 99Names */
+.pt-enter-forward {
+    animation: ptSlideInRight 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+}
+
+.pt-exit-forward {
+    animation: ptSlideOutLeft 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+}
+
+/* Backward: 99Names -> Index */
+.pt-enter-backward {
+    animation: ptSlideInLeft 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+}
+
+.pt-exit-backward {
+    animation: ptSlideOutRight 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+}
+
+/* Default / Fallback (Fade) */
+.pt-enter-default {
+    animation: ptFadeIn 0.4s ease-out forwards;
+}
+
+.pt-exit-default {
+    animation: ptFadeOut 0.4s ease-in forwards;
+}
