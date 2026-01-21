@@ -17,6 +17,9 @@ const revelationTypeTranslations = {
     'Medinan': 'Medinensisch'
 };
 
+const BISMILLAH_AR = "بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ";
+const BISMILLAH_DE = "Im Namen Allahs, des Allerbarmers, des Barmherzigen";
+
 function translateType(type) {
     return revelationTypeTranslations[type] || type;
 }
@@ -215,12 +218,37 @@ function renderSurahView(number) {
     nextBtn.disabled = number >= 114;
     nextBtn.onclick = () => loadSurah(number + 1);
 
+    // Handle Bismillah for Surahs != 1 and != 9
+    let showBismillahHeader = false;
+    if (number != 1 && number != 9) {
+        if (currentSurah.arabic[0] && currentSurah.arabic[0].text.startsWith(BISMILLAH_AR)) {
+            showBismillahHeader = true;
+        }
+    }
+
+    if (showBismillahHeader) {
+        const bismillahDiv = document.createElement('div');
+        bismillahDiv.className = 'text-center mb-8';
+        bismillahDiv.innerHTML = `
+            <p class="font-amiri text-3xl text-gray-800 dark:text-gray-200 mb-2 leading-loose">${BISMILLAH_AR}</p>
+            <p class="text-sm text-gray-500 dark:text-gray-400">${BISMILLAH_DE}</p>
+        `;
+        ayahsContainer.appendChild(bismillahDiv);
+    }
+
     const ayahCount = currentSurah.arabic.length;
 
     for (let i = 0; i < ayahCount; i++) {
         const ar = currentSurah.arabic[i];
         const de = currentSurah.german[i];
-        const au = currentSurah.audio[i];
+        // au is not used directly in HTML generation, audio logic handles it via indices
+
+        let arText = ar.text;
+
+        // If we showed the header, we strip the Bismillah from the first Ayah
+        if (i === 0 && showBismillahHeader) {
+            arText = arText.substring(BISMILLAH_AR.length).trim();
+        }
 
         const ayahDiv = document.createElement('div');
         ayahDiv.id = `ayah-${ar.number}`; // Global Ayah ID
@@ -230,7 +258,7 @@ function renderSurahView(number) {
             <div class="flex justify-between items-start mb-4 gap-4">
                 <span class="w-8 h-8 flex-shrink-0 rounded-full bg-slate-100 dark:bg-slate-700 flex items-center justify-center text-xs font-bold text-gray-500">${ar.numberInSurah}</span>
                 <div class="text-right w-full">
-                    <p class="arabic-text text-2xl md:text-3xl text-gray-800 dark:text-gray-100 leading-loose">${ar.text}</p>
+                    <p class="arabic-text text-2xl md:text-3xl text-gray-800 dark:text-gray-100 leading-loose">${arText}</p>
                 </div>
             </div>
 
@@ -401,8 +429,17 @@ async function openReciterSelection() {
     const modal = document.getElementById('settings-modal');
     modal.classList.remove('hidden');
 
+    const select = document.getElementById('reciter-select');
+
     if (recitersList.length === 0) {
-        await fetchReciters();
+        if(select) select.innerHTML = '<option>Lade Rezitatoren...</option>';
+
+        const success = await fetchReciters();
+        if (success) {
+            populateReciterSelect();
+        } else {
+            if(select) select.innerHTML = '<option>Fehler beim Laden der Liste</option>';
+        }
     } else {
         populateReciterSelect();
     }
@@ -413,9 +450,6 @@ function closeSettings() {
 }
 
 async function fetchReciters() {
-    const select = document.getElementById('reciter-select');
-    if(select && select.children.length <= 1) select.innerHTML = '<option>Lade...</option>';
-
     try {
         const response = await fetch('https://api.alquran.cloud/v1/edition/format/audio');
         const data = await response.json();
@@ -426,12 +460,12 @@ async function fetchReciters() {
             // Sort by name
             recitersList.sort((a, b) => a.englishName.localeCompare(b.englishName));
 
-            populateReciterSelect();
-            updateReciterButtonUI();
+            return true;
         }
+        return false;
     } catch (e) {
-        console.error(e);
-        if(select) select.innerHTML = '<option>Fehler beim Laden</option>';
+        console.error("Fehler beim Laden der Rezitatoren:", e);
+        return false;
     }
 }
 
