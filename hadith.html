@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+    <!-- SEO Meta Tags -->
+    <title>Hadith Sammlung - Sahih Bukhari, Muslim & mehr</title>
+    <meta name="description" content="Lese Hadith Sammlungen wie Sahih Bukhari, Muslim, Tirmidhi auf Englisch und Arabisch.">
+
+    <!-- PWA / Mobile Optimization -->
+    <meta name="theme-color" content="#0f172a">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            50: 'var(--color-primary-50)',
+                            100: 'var(--color-primary-100)',
+                            200: 'var(--color-primary-200)',
+                            400: 'var(--color-primary-400)',
+                            500: 'var(--color-primary-500)',
+                            600: 'var(--color-primary-600)',
+                            700: 'var(--color-primary-700)',
+                        }
+                    },
+                    fontFamily: {
+                        amiri: ['Amiri', 'serif'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Amiri:wght@400;700&display=swap" rel="stylesheet">
+
+    <!-- Page Transitions -->
+    <link rel="stylesheet" href="transition.css">
+
+    <style>
+        :root {
+            --color-primary-50: #ecfdf5;
+            --color-primary-100: #d1fae5;
+            --color-primary-200: #a7f3d0;
+            --color-primary-400: #34d399;
+            --color-primary-500: #10b981;
+            --color-primary-600: #059669;
+            --color-primary-700: #047857;
+            --color-primary-shadow: rgba(16, 185, 129, 0.3);
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6;
+            transition: background-color 0.3s ease;
+        }
+        html.dark body {
+            background-color: #0f172a;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: background-color 0.3s ease, border-color 0.3s ease;
+        }
+        html.dark .glass-card {
+            background: rgba(30, 41, 59, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .loader {
+            border: 3px solid #f3f3f3;
+            border-radius: 50%;
+            border-top: 3px solid var(--color-primary-500);
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .arabic-text {
+            font-family: 'Amiri', serif;
+            line-height: 2.2;
+            direction: rtl;
+        }
+    </style>
+</head>
+<body class="text-gray-800 dark:text-gray-200 antialiased min-h-screen flex flex-col">
+
+    <!-- Header -->
+    <header class="bg-slate-900 text-white pb-8 pt-8 px-4 relative overflow-hidden shadow-lg">
+        <div class="absolute top-0 left-0 w-full h-full opacity-10">
+            <i class="fas fa-book-open absolute -bottom-10 -right-10 text-9xl"></i>
+        </div>
+
+        <div class="max-w-3xl mx-auto relative z-10 flex items-center gap-4">
+            <a href="index.html" class="bg-slate-800 hover:bg-slate-700 p-2 rounded-full transition w-10 h-10 flex items-center justify-center shadow-lg border border-slate-700 text-white">
+                <i class="fas fa-arrow-left"></i>
+            </a>
+            <div>
+                <h1 class="text-2xl font-bold tracking-tight">Hadith Sammlung</h1>
+                <p class="text-slate-400 text-sm">Sunnah des Propheten ﷺ</p>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="flex-grow px-4 -mt-4 relative z-20 pb-10">
+        <div class="max-w-3xl mx-auto">
+
+            <!-- Loading State -->
+            <div id="loading-state" class="hidden flex-col items-center justify-center py-12">
+                <div class="loader w-10 h-10 border-4 mb-4"></div>
+                <p class="text-gray-500 dark:text-gray-400">Lade Daten...</p>
+            </div>
+
+            <!-- Error State -->
+            <div id="error-state" class="hidden text-center py-12">
+                <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-red-100 text-red-500 mb-4">
+                    <i class="fas fa-exclamation-triangle text-2xl"></i>
+                </div>
+                <h3 class="text-lg font-bold mb-2">Ein Fehler ist aufgetreten</h3>
+                <p id="error-message" class="text-gray-500 dark:text-gray-400 mb-6">Die Daten konnten nicht geladen werden.</p>
+                <button onclick="location.reload()" class="px-6 py-2 bg-slate-800 text-white rounded-lg hover:bg-slate-700 transition">Erneut versuchen</button>
+            </div>
+
+            <!-- Books View -->
+            <div id="books-view" class="animate-fade-in space-y-4 hidden">
+                <div class="glass-card rounded-xl p-4 mb-4">
+                    <h2 class="font-bold text-lg mb-2">Bücher Auswahl</h2>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">Wähle eine Hadith-Sammlung aus, um zu beginnen.</p>
+                </div>
+
+                <div id="books-list-container" class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <!-- Books injected here -->
+                </div>
+            </div>
+
+            <!-- Chapters View -->
+            <div id="chapters-view" class="animate-fade-in space-y-4 hidden">
+                <!-- Header with Search -->
+                <div class="glass-card rounded-xl p-4 mb-4">
+                    <div class="flex items-center gap-2 mb-3 text-sm text-primary-600 dark:text-primary-400 font-medium">
+                        <span id="selected-book-name">Beweis des Buches</span>
+                        <i class="fas fa-chevron-right text-xs text-gray-400"></i>
+                        <span>Kapitel</span>
+                    </div>
+
+                    <div class="flex gap-2">
+                        <i class="fas fa-search text-gray-400 mt-3"></i>
+                        <input type="text" id="chapter-search" placeholder="Suche Kapitel..."
+                               class="w-full bg-transparent border-none focus:ring-0 text-gray-700 dark:text-gray-200 placeholder-gray-400">
+                    </div>
+                </div>
+
+                <div id="chapters-list-container" class="space-y-2">
+                    <!-- Chapters injected here -->
+                </div>
+            </div>
+
+            <!-- Hadiths View -->
+            <div id="hadiths-view" class="animate-fade-in space-y-4 hidden">
+                <div class="glass-card rounded-xl p-4 mb-4">
+                    <div class="flex flex-col gap-1">
+                        <div class="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
+                            <span id="breadcrumb-book">Buch</span>
+                            <i class="fas fa-chevron-right text-[10px]"></i>
+                            <span id="breadcrumb-chapter">Kapitel</span>
+                        </div>
+                        <h2 id="current-chapter-title" class="font-bold text-lg">Kapitel Titel</h2>
+                    </div>
+                </div>
+
+                <div id="hadiths-list-container" class="space-y-6">
+                    <!-- Hadiths injected here -->
+                </div>
+
+                <!-- Pagination -->
+                <div class="flex justify-between items-center mt-6 pt-4 border-t border-gray-200 dark:border-gray-700">
+                    <button id="prev-page-btn" class="px-4 py-2 rounded-lg bg-white dark:bg-slate-800 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-slate-700 transition disabled:opacity-50 disabled:cursor-not-allowed">
+                        <i class="fas fa-chevron-left mr-2"></i> Zurück
+                    </button>
+                    <span id="page-info" class="text-sm font-medium text-gray-600 dark:text-gray-400">Seite 1</span>
+                    <button id="next-page-btn" class="px-4 py-2 rounded-lg bg-white dark:bg-slate-800 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-slate-700 transition disabled:opacity-50 disabled:cursor-not-allowed">
+                        Weiter <i class="fas fa-chevron-right ml-2"></i>
+                    </button>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <script src="theme.js"></script>
+    <script src="transition.js"></script>
+    <script src="hadith.js"></script>
+</body>
+</html>
