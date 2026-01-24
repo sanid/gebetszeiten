@@ -419,7 +419,7 @@
     </footer>
 
     <!-- Method Modal -->
-    <div id="method-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-fade-in transition-opacity duration-300">
+    <div id="method-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-fade-in transition-opacity duration-300 h-[100dvh] w-screen">
         <div class="glass-card bg-white dark:bg-slate-800 w-full max-w-md rounded-2xl p-6 relative shadow-2xl border border-white/20 transform transition-all scale-100">
             <button onclick="closeMethodModal()" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 dark:hover:text-white transition">
                 <i class="fas fa-times text-xl"></i>
@@ -436,11 +436,22 @@
                  </p>
             </div>
 
-            <div class="mb-6">
+            <div class="mb-4">
                  <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">Methode wählen</label>
                  <select id="method-select-modal" onchange="changeMethod(this.value)" class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:outline-none bg-gray-50 dark:bg-slate-700 text-gray-800 dark:text-white appearance-none cursor-pointer">
                      <!-- Populated via JS -->
                  </select>
+            </div>
+
+            <div class="mb-6 flex items-center justify-between bg-gray-50 dark:bg-slate-700 p-3 rounded-lg border border-gray-200 dark:border-gray-600">
+                <div class="flex flex-col">
+                    <span class="text-sm font-semibold text-gray-700 dark:text-gray-200">Hanafi Juristik</span>
+                    <span class="text-[10px] text-gray-500 dark:text-gray-400">Spätere Asr Zeit (Schule: 1)</span>
+                </div>
+                <label class="relative inline-flex items-center cursor-pointer">
+                    <input type="checkbox" id="school-toggle-modal" class="sr-only peer" onchange="toggleSchool()">
+                    <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-500 dark:bg-gray-700 dark:peer-checked:bg-primary-500"></div>
+                </label>
             </div>
 
             <div class="flex justify-end">
@@ -502,6 +513,7 @@
             darkMode: false,
             location: null,
             method: DEFAULT_METHOD,
+            school: 1, // Default Hanafi
             timings: null,
             nextPrayer: null,
             currentPrayer: null, // Neu: Für die Hervorhebung
@@ -567,10 +579,15 @@
             renderMethodOptions('method-select');
             renderMethodOptions('method-select-modal');
 
-            // 1. Load Method
+            // 1. Load Method & School
             const savedMethod = localStorage.getItem('prayerAppMethod');
             if (savedMethod) {
                 appState.method = parseInt(savedMethod);
+            }
+
+            const savedSchool = localStorage.getItem('prayerAppSchool');
+            if (savedSchool) {
+                appState.school = parseInt(savedSchool);
             }
 
             // Sync Selects
@@ -743,6 +760,18 @@
             });
         }
 
+        function toggleSchool() {
+            const toggle = document.getElementById('school-toggle-modal');
+            appState.school = toggle.checked ? 1 : 0;
+            localStorage.setItem('prayerAppSchool', appState.school);
+
+            // Refetch if location exists
+            if (appState.location) {
+                 document.getElementById('prayer-list').innerHTML = '<div class="p-4 text-center text-primary-600"><i class="fas fa-sync fa-spin mr-2"></i>Aktualisiere Zeiten...</div>';
+                 fetchPrayerData();
+            }
+        }
+
         function openMethodModal() {
             const modal = document.getElementById('method-modal');
             modal.classList.remove('hidden');
@@ -750,6 +779,9 @@
             // Sync value when opening just in case
             const select = document.getElementById('method-select-modal');
             if(select) select.value = appState.method;
+
+            const toggle = document.getElementById('school-toggle-modal');
+            if(toggle) toggle.checked = (appState.school === 1);
         }
 
         function closeMethodModal() {
@@ -951,8 +983,9 @@
 
             // Use the selected method
             const method = appState.method || DEFAULT_METHOD;
+            const school = (appState.school !== undefined) ? appState.school : 1;
 
-            const url = `https://api.aladhan.com/v1/calendar/${year}/${month}?latitude=${appState.location.lat}&longitude=${appState.location.lng}&method=${method}&school=1`;
+            const url = `https://api.aladhan.com/v1/calendar/${year}/${month}?latitude=${appState.location.lat}&longitude=${appState.location.lng}&method=${method}&school=${school}`;
 
             try {
                 const response = await fetch(url);
@@ -1248,31 +1281,32 @@
 // Generated Code
 
 const DEFAULT = {
-  city: "Berlin",
-  country: "Germany",
-  method: 3
+  city: "Berlin",
+  country: "Germany",
+  method: 3,
+  school: 1
 };
 
 // --- FARBPALETTE ---
 const COLORS = {
-  "grün": "#10b981",
-  "green": "#10b981",
-  "emerald": "#10b981",
-  "blau": "#3b82f6",
-  "blue": "#3b82f6",
-  "türkis": "#06b6d4",
-  "cyan": "#06b6d4",
-  "rot": "#ef4444",
-  "red": "#ef4444",
-  "pink": "#ec4899",
-  "magenta": "#d946ef",
-  "lila": "#8b5cf6",
-  "purple": "#8b5cf6",
-  "orange": "#f97316",
-  "gelb": "#eab308",
-  "yellow": "#eab308",
-  "grau": "#6b7280",
-  "gray": "#6b7280"
+  "grün": "#10b981",
+  "green": "#10b981",
+  "emerald": "#10b981",
+  "blau": "#3b82f6",
+  "blue": "#3b82f6",
+  "türkis": "#06b6d4",
+  "cyan": "#06b6d4",
+  "rot": "#ef4444",
+  "red": "#ef4444",
+  "pink": "#ec4899",
+  "magenta": "#d946ef",
+  "lila": "#8b5cf6",
+  "purple": "#8b5cf6",
+  "orange": "#f97316",
+  "gelb": "#eab308",
+  "yellow": "#eab308",
+  "grau": "#6b7280",
+  "gray": "#6b7280"
 };
 
 // Fallback Farbe
@@ -1282,30 +1316,40 @@ let THEME_COLOR_HEX = "#10b981";
 let cityParam = DEFAULT.city;
 
 if (args.widgetParameter) {
-  const params = args.widgetParameter.split(",");
-  if (params[0] && params[0].trim() !== "") {
-    cityParam = params[0].trim();
-  }
-  for (let i = 1; i < params.length; i++) {
-    let p = params[i].trim();
-    if (p === "") continue;
-    if (!isNaN(p)) {
-      DEFAULT.method = parseInt(p);
-      continue;
-    }
-    let lowerC = p.toLowerCase();
-    if (COLORS[lowerC]) {
-      THEME_COLOR_HEX = COLORS[lowerC];
-    } else if (lowerC.startsWith("#")) {
-      THEME_COLOR_HEX = lowerC;
-    }
-  }
+  const params = args.widgetParameter.split(",");
+  if (params[0] && params[0].trim() !== "") {
+    cityParam = params[0].trim();
+  }
+
+  let methodFound = false;
+
+  for (let i = 1; i < params.length; i++) {
+    let p = params[i].trim();
+    if (p === "") continue;
+
+    if (!isNaN(p)) {
+      if (!methodFound) {
+        DEFAULT.method = parseInt(p);
+        methodFound = true;
+      } else {
+        DEFAULT.school = parseInt(p);
+      }
+      continue;
+    }
+
+    let lowerC = p.toLowerCase();
+    if (COLORS[lowerC]) {
+      THEME_COLOR_HEX = COLORS[lowerC];
+    } else if (lowerC.startsWith("#")) {
+      THEME_COLOR_HEX = lowerC;
+    }
+  }
 }
 
 // Colors
 const THEME_COLOR = new Color(THEME_COLOR_HEX);
-const BG_TOP = getDarkVariant(THEME_COLOR_HEX, 0.2); 
-const BG_BOT = getDarkVariant(THEME_COLOR_HEX, 0.1); 
+const BG_TOP = getDarkVariant(THEME_COLOR_HEX, 0.2);
+const BG_BOT = getDarkVariant(THEME_COLOR_HEX, 0.1);
 
 // Init Widget
 const widget = new ListWidget();
@@ -1315,290 +1359,291 @@ gradient.locations = [0, 1];
 widget.backgroundGradient = gradient;
 
 try {
-  let now = new Date();
-  let data = await fetchPrayerData(now, cityParam);
-  let timings = data.timings;
-  
-  const ishaStr = timings['Isha'].split(' ')[0];
-  const [h, m] = ishaStr.split(':').map(Number);
-  const ishaDate = new Date(now);
-  ishaDate.setHours(h, m, 0, 0);
-  
-  let isNextDay = false;
-  if (now > ishaDate) {
-     const tomorrow = new Date(now);
-     tomorrow.setDate(tomorrow.getDate() + 1);
-     data = await fetchPrayerData(tomorrow, cityParam);
-     timings = data.timings;
-     isNextDay = true;
-  }
-  
-  const hijri = data.date.hijri;
-  let next;
-  if (isNextDay) {
-     next = { name: 'Fajr', time: timings['Fajr'].split(' ')[0] };
-  } else {
-     next = getNextPrayerToday(timings);
-  }
-  
-  // --- RESPONSIVE UI ---
-  const family = config.widgetFamily || "medium";
-  
-  if (family === 'small') {
-      renderSmall(widget, next, timings);
-  } else if (family === 'accessoryRectangular') {
-      // Lockscreen Rechteck
-      renderRectangular(widget, next, timings);
-  } else if (family === 'accessoryCircular') {
-      // Lockscreen Rund
-      renderCircular(widget, next);
-  } else {
-      renderMedium(widget, next, timings, hijri, cityParam);
-  }
-  
-  widget.refreshAfterDate = new Date(Date.now() + 60 * 60 * 1000);
+  let now = new Date();
+  let data = await fetchPrayerData(now, cityParam);
+  let timings = data.timings;
+
+  const ishaStr = timings['Isha'].split(' ')[0];
+  const [h, m] = ishaStr.split(':').map(Number);
+  const ishaDate = new Date(now);
+  ishaDate.setHours(h, m, 0, 0);
+
+  let isNextDay = false;
+  if (now > ishaDate) {
+     const tomorrow = new Date(now);
+     tomorrow.setDate(tomorrow.getDate() + 1);
+     data = await fetchPrayerData(tomorrow, cityParam);
+     timings = data.timings;
+     isNextDay = true;
+  }
+
+  const hijri = data.date.hijri;
+  let next;
+  if (isNextDay) {
+     next = { name: 'Fajr', time: timings['Fajr'].split(' ')[0] };
+  } else {
+     next = getNextPrayerToday(timings);
+  }
+
+  // --- RESPONSIVE UI ---
+  const family = config.widgetFamily || "medium";
+
+  if (family === 'small') {
+      renderSmall(widget, next, timings);
+  } else if (family === 'accessoryRectangular') {
+      // Lockscreen Rechteck
+      renderRectangular(widget, next, timings);
+  } else if (family === 'accessoryCircular') {
+      // Lockscreen Rund
+      renderCircular(widget, next);
+  } else {
+      renderMedium(widget, next, timings, hijri, cityParam);
+  }
+
+  widget.refreshAfterDate = new Date(Date.now() + 60 * 60 * 1000);
 
 } catch (e) {
-  widget.addText("Err: " + e.message).textColor = Color.red();
+  widget.addText("Err: " + e.message).textColor = Color.red();
 }
 
 Script.setWidget(widget);
 Script.complete();
 
 if (config.runsInApp) {
-    if ("medium" === "small") {
-        widget.presentSmall();
-    } else {
-        widget.presentMedium();
-    }
+    if ("medium" === "small") {
+        widget.presentSmall();
+    } else {
+        widget.presentMedium();
+    }
 }
 
 // --- RENDER FUNCTIONS ---
 
 // 1. LOCKSCREEN RECTANGULAR
 function renderRectangular(w, next, timings) {
-    const stack = w.addStack();
-    stack.layoutHorizontally();
-    stack.centerAlignContent();
-    
-    // Left: Big Next Time
-    const left = stack.addStack();
-    left.layoutVertically();
-    left.centerAlignContent();
-    
-    const lbl = left.addText(mapName(next.name).toUpperCase());
-    lbl.font = Font.boldSystemFont(9);
-    lbl.textColor = Color.white(); 
-    
-    const time = left.addText(next.time);
-    time.font = Font.boldSystemFont(22); 
-    time.textColor = Color.white();
-    
-    stack.addSpacer();
-    
-    // Right: List (Very small)
-    const right = stack.addStack();
-    right.layoutVertically();
-    
-    const prayers = ['Fajr', 'Dhuhr', 'Asr', 'Maghrib', 'Isha'];
-    for(let p of prayers) {
-        const row = right.addStack();
-        row.layoutHorizontally();
-        
-        // Highlight active
-        const isActive = (p === next.name);
-        const f = isActive ? Font.boldSystemFont(8) : Font.systemFont(8);
-        // Dim inactive prayers heavily
-        const opacity = isActive ? 1 : 0.5;
-        
-        const n = row.addText(mapName(p).substr(0, 3)); 
-        n.font = f;
-        n.textOpacity = opacity;
-        n.textColor = Color.white();
-        
-        row.addSpacer(4);
-        
-        const t = row.addText(timings[p].split(' ')[0]);
-        t.font = f;
-        t.textOpacity = opacity;
-        t.textColor = Color.white();
-    }
+    const stack = w.addStack();
+    stack.layoutHorizontally();
+    stack.centerAlignContent();
+
+    // Left: Big Next Time
+    const left = stack.addStack();
+    left.layoutVertically();
+    left.centerAlignContent();
+
+    const lbl = left.addText(mapName(next.name).toUpperCase());
+    lbl.font = Font.boldSystemFont(9);
+    lbl.textColor = Color.white();
+
+    const time = left.addText(next.time);
+    time.font = Font.boldSystemFont(22);
+    time.textColor = Color.white();
+
+    stack.addSpacer();
+
+    // Right: List (Very small)
+    const right = stack.addStack();
+    right.layoutVertically();
+
+    const prayers = ['Fajr', 'Dhuhr', 'Asr', 'Maghrib', 'Isha'];
+    for(let p of prayers) {
+        const row = right.addStack();
+        row.layoutHorizontally();
+
+        // Highlight active
+        const isActive = (p === next.name);
+        const f = isActive ? Font.boldSystemFont(8) : Font.systemFont(8);
+        // Dim inactive prayers heavily
+        const opacity = isActive ? 1 : 0.5;
+
+        const n = row.addText(mapName(p).substr(0, 3));
+        n.font = f;
+        n.textOpacity = opacity;
+        n.textColor = Color.white();
+
+        row.addSpacer(4);
+
+        const t = row.addText(timings[p].split(' ')[0]);
+        t.font = f;
+        t.textOpacity = opacity;
+        t.textColor = Color.white();
+    }
 }
 
 // 2. LOCKSCREEN CIRCULAR
 function renderCircular(w, next) {
-    const stack = w.addStack();
-    stack.layoutVertically();
-    stack.centerAlignContent();
-    
-    const t = stack.addText(next.time);
-    t.font = Font.boldSystemFont(12);
-    t.minimumScaleFactor = 0.5;
-    t.textColor = Color.white();
-    t.centerAlignText();
-    
-    const n = stack.addText(mapName(next.name));
-    n.font = Font.systemFont(8);
-    n.textColor = Color.white();
-    n.centerAlignText();
+    const stack = w.addStack();
+    stack.layoutVertically();
+    stack.centerAlignContent();
+
+    const t = stack.addText(next.time);
+    t.font = Font.boldSystemFont(12);
+    t.minimumScaleFactor = 0.5;
+    t.textColor = Color.white();
+    t.centerAlignText();
+
+    const n = stack.addText(mapName(next.name));
+    n.font = Font.systemFont(8);
+    n.textColor = Color.white();
+    n.centerAlignText();
 }
 
 // 3. HOMESCREEN SMALL
 function renderSmall(w, next, timings) {
-    w.setPadding(12, 12, 12, 12);
-    
-    const topStack = w.addStack();
-    topStack.layoutVertically();
-    topStack.centerAlignContent(); 
-    
-    const nextLabel = topStack.addText("NÄCHSTES GEBET: " + mapName(next.name).toUpperCase());
-    nextLabel.font = Font.boldSystemFont(9);
-    nextLabel.textColor = THEME_COLOR;
-    nextLabel.centerAlignText();
-    
-    const nextTime = topStack.addText(next.time);
-    nextTime.font = Font.boldSystemFont(32); 
-    nextTime.textColor = Color.white();
-    nextTime.centerAlignText();
-    
-    w.addSpacer(8);
-    
-    const listStack = w.addStack();
-    listStack.layoutVertically();
-    
-    const prayers = ['Fajr', 'Dhuhr', 'Asr', 'Maghrib', 'Isha'];
-    
-    for (let pName of prayers) {
-        const pTime = timings[pName].split(' ')[0];
-        const isActive = (pName === next.name);
-        
-        const row = listStack.addStack();
-        row.layoutHorizontally();
-        
-        const nameT = row.addText(mapName(pName));
-        nameT.font = isActive ? Font.boldSystemFont(9) : Font.systemFont(9);
-        nameT.textColor = isActive ? THEME_COLOR : new Color("#888888");
-        
-        row.addSpacer();
-        
-        const timeT = row.addText(pTime);
-        timeT.font = isActive ? Font.boldSystemFont(9) : Font.systemFont(9);
-        timeT.textColor = isActive ? Color.white() : new Color("#cccccc");
-        
-        listStack.addSpacer(2);
-    }
+    w.setPadding(12, 12, 12, 12);
+
+    const topStack = w.addStack();
+    topStack.layoutVertically();
+    topStack.centerAlignContent();
+
+    const nextLabel = topStack.addText("NÄCHSTES GEBET: " + mapName(next.name).toUpperCase());
+    nextLabel.font = Font.boldSystemFont(9);
+    nextLabel.textColor = THEME_COLOR;
+    nextLabel.centerAlignText();
+
+    const nextTime = topStack.addText(next.time);
+    nextTime.font = Font.boldSystemFont(32);
+    nextTime.textColor = Color.white();
+    nextTime.centerAlignText();
+
+    w.addSpacer(8);
+
+    const listStack = w.addStack();
+    listStack.layoutVertically();
+
+    const prayers = ['Fajr', 'Dhuhr', 'Asr', 'Maghrib', 'Isha'];
+
+    for (let pName of prayers) {
+        const pTime = timings[pName].split(' ')[0];
+        const isActive = (pName === next.name);
+
+        const row = listStack.addStack();
+        row.layoutHorizontally();
+
+        const nameT = row.addText(mapName(pName));
+        nameT.font = isActive ? Font.boldSystemFont(9) : Font.systemFont(9);
+        nameT.textColor = isActive ? THEME_COLOR : new Color("#888888");
+
+        row.addSpacer();
+
+        const timeT = row.addText(pTime);
+        timeT.font = isActive ? Font.boldSystemFont(9) : Font.systemFont(9);
+        timeT.textColor = isActive ? Color.white() : new Color("#cccccc");
+
+        listStack.addSpacer(2);
+    }
 }
 
 // 4. HOMESCREEN MEDIUM
 function renderMedium(w, next, timings, hijri, cityName) {
-  const headerStack = w.addStack();
-  headerStack.layoutHorizontally();
-  headerStack.topAlignContent(); 
-  
-  const infoStack = headerStack.addStack();
-  infoStack.layoutVertically();
-  
-  const cityText = infoStack.addText(String(cityName));
-  cityText.font = Font.boldSystemFont(14);
-  cityText.textColor = Color.white();
-  
-  const hijriText = infoStack.addText(\`\${hijri.day} \${hijri.month.en}\`);
-  hijriText.font = Font.systemFont(10);
-  hijriText.textColor = THEME_COLOR;
-  
-  headerStack.addSpacer();
-  
-  const nextStack = headerStack.addStack();
-  nextStack.layoutVertically();
-  nextStack.bottomAlignContent(); 
-  
-  const nextLabel = nextStack.addText("NÄCHSTES GEBET: " + mapName(next.name).toUpperCase());
-  nextLabel.font = Font.boldSystemFont(10);
-  nextLabel.textColor = THEME_COLOR;
-  nextLabel.rightAlignText();
-  
-  const nextTime = nextStack.addText(next.time);
-  nextTime.font = Font.boldSystemFont(46);
-  nextTime.textColor = Color.white();
-  nextTime.rightAlignText();
-  
-  w.addSpacer();
-  
-  const listStack = w.addStack();
-  listStack.layoutHorizontally();
-  listStack.centerAlignContent();
-  
-  const prayers = ['Fajr', 'Dhuhr', 'Asr', 'Maghrib', 'Isha'];
-  
-  for (let i = 0; i < prayers.length; i++) {
-    const pName = prayers[i];
-    const pTime = timings[pName].split(' ')[0];
-    const isActive = (pName === next.name);
-    addPrayerItem(listStack, pName, pTime, isActive);
-    if (i < prayers.length - 1) listStack.addSpacer();
-  }
+  const headerStack = w.addStack();
+  headerStack.layoutHorizontally();
+  headerStack.topAlignContent();
+
+  const infoStack = headerStack.addStack();
+  infoStack.layoutVertically();
+
+  const cityText = infoStack.addText(String(cityName));
+  cityText.font = Font.boldSystemFont(14);
+  cityText.textColor = Color.white();
+
+  const hijriText = infoStack.addText(\`\${hijri.day} \${hijri.month.en}\`);
+  hijriText.font = Font.systemFont(10);
+  hijriText.textColor = THEME_COLOR;
+
+  headerStack.addSpacer();
+
+  const nextStack = headerStack.addStack();
+  nextStack.layoutVertically();
+  nextStack.bottomAlignContent();
+
+  const nextLabel = nextStack.addText("NÄCHSTES GEBET: " + mapName(next.name).toUpperCase());
+  nextLabel.font = Font.boldSystemFont(10);
+  nextLabel.textColor = THEME_COLOR;
+  nextLabel.rightAlignText();
+
+  const nextTime = nextStack.addText(next.time);
+  nextTime.font = Font.boldSystemFont(46);
+  nextTime.textColor = Color.white();
+  nextTime.rightAlignText();
+
+  w.addSpacer();
+
+  const listStack = w.addStack();
+  listStack.layoutHorizontally();
+  listStack.centerAlignContent();
+
+  const prayers = ['Fajr', 'Dhuhr', 'Asr', 'Maghrib', 'Isha'];
+
+  for (let i = 0; i < prayers.length; i++) {
+    const pName = prayers[i];
+    const pTime = timings[pName].split(' ')[0];
+    const isActive = (pName === next.name);
+    addPrayerItem(listStack, pName, pTime, isActive);
+    if (i < prayers.length - 1) listStack.addSpacer();
+  }
 }
 
 // --- HELPERS ---
 
 async function fetchPrayerData(dateObj, city) {
-  const dateStr = \`\${dateObj.getDate()}-\${dateObj.getMonth()+1}-\${dateObj.getFullYear()}\`;
-  
-  let c = encodeURI(String(city));
-  let co = encodeURI(String(DEFAULT.country));
-  let m = String(DEFAULT.method);
-  
-  const url = \`https://api.aladhan.com/v1/timingsByCity/\${dateStr}?city=\${c}&country=\${co}&method=\${m}&school=1\`;
-  const req = new Request(url);
-  return (await req.loadJSON()).data;
+  const dateStr = \`\${dateObj.getDate()}-\${dateObj.getMonth()+1}-\${dateObj.getFullYear()}\`;
+
+  let c = encodeURI(String(city));
+  let co = encodeURI(String(DEFAULT.country));
+  let m = String(DEFAULT.method);
+  let s = String(DEFAULT.school);
+
+  const url = \`https://api.aladhan.com/v1/timingsByCity/\${dateStr}?city=\${c}&country=\${co}&method=\${m}&school=\${s}\`;
+  const req = new Request(url);
+  return (await req.loadJSON()).data;
 }
 
 function getNextPrayerToday(timings) {
-  const now = new Date();
-  const currentMins = now.getHours() * 60 + now.getMinutes();
-  const order = ['Fajr', 'Sunrise', 'Dhuhr', 'Asr', 'Maghrib', 'Isha'];
-  for (let name of order) {
-    const timeStr = timings[name].split(' ')[0];
-    const [h, m] = timeStr.split(':').map(Number);
-    const mins = h * 60 + m;
-    if (mins > currentMins) return { name: name, time: timeStr };
-  }
-  return { name: 'Fajr', time: timings['Fajr'].split(' ')[0] };
+  const now = new Date();
+  const currentMins = now.getHours() * 60 + now.getMinutes();
+  const order = ['Fajr', 'Sunrise', 'Dhuhr', 'Asr', 'Maghrib', 'Isha'];
+  for (let name of order) {
+    const timeStr = timings[name].split(' ')[0];
+    const [h, m] = timeStr.split(':').map(Number);
+    const mins = h * 60 + m;
+    if (mins > currentMins) return { name: name, time: timeStr };
+  }
+  return { name: 'Fajr', time: timings['Fajr'].split(' ')[0] };
 }
 
 function addPrayerItem(stack, name, time, isActive) {
-  const itemStack = stack.addStack();
-  itemStack.layoutVertically();
-  itemStack.centerAlignContent();
-  
-  const nameTxt = itemStack.addText(mapName(name));
-  nameTxt.font = isActive ? Font.boldSystemFont(9) : Font.systemFont(9);
-  nameTxt.textColor = isActive ? THEME_COLOR : new Color("#888888");
-  nameTxt.centerAlignText();
-  itemStack.addSpacer(2);
-  const timeStack = itemStack.addStack();
-  if (isActive) {
-    timeStack.backgroundColor = new Color("#ffffff", 0.15); 
-    timeStack.cornerRadius = 4;
-    timeStack.setPadding(2, 4, 2, 4);
-  }
-  const timeTxt = timeStack.addText(time);
-  timeTxt.font = isActive ? Font.boldSystemFont(11) : Font.mediumSystemFont(11);
-  timeTxt.textColor = isActive ? Color.white() : new Color("#cccccc");
+  const itemStack = stack.addStack();
+  itemStack.layoutVertically();
+  itemStack.centerAlignContent();
+
+  const nameTxt = itemStack.addText(mapName(name));
+  nameTxt.font = isActive ? Font.boldSystemFont(9) : Font.systemFont(9);
+  nameTxt.textColor = isActive ? THEME_COLOR : new Color("#888888");
+  nameTxt.centerAlignText();
+  itemStack.addSpacer(2);
+  const timeStack = itemStack.addStack();
+  if (isActive) {
+    timeStack.backgroundColor = new Color("#ffffff", 0.15);
+    timeStack.cornerRadius = 4;
+    timeStack.setPadding(2, 4, 2, 4);
+  }
+  const timeTxt = timeStack.addText(time);
+  timeTxt.font = isActive ? Font.boldSystemFont(11) : Font.mediumSystemFont(11);
+  timeTxt.textColor = isActive ? Color.white() : new Color("#cccccc");
 }
 
 function mapName(key) {
-  const map = { "Fajr": "Fajr", "Sunrise": "Shuruk", "Dhuhr": "Dhuhr", "Asr": "Asr", "Maghrib": "Maghrib", "Isha": "Isha" };
-  return map[key] || key;
+  const map = { "Fajr": "Fajr", "Sunrise": "Shuruk", "Dhuhr": "Dhuhr", "Asr": "Asr", "Maghrib": "Maghrib", "Isha": "Isha" };
+  return map[key] || key;
 }
 
 function getDarkVariant(hex, factor) {
-   let c = new Color(hex);
-   let r = Math.floor(c.red * factor * 255);
-   let g = Math.floor(c.green * factor * 255);
-   let b = Math.floor(c.blue * factor * 255);
-   let toHex = (n) => ("0" + n.toString(16)).slice(-2);
-   return new Color("#" + toHex(r) + toHex(g) + toHex(b));
+   let c = new Color(hex);
+   let r = Math.floor(c.red * factor * 255);
+   let g = Math.floor(c.green * factor * 255);
+   let b = Math.floor(c.blue * factor * 255);
+   let toHex = (n) => ("0" + n.toString(16)).slice(-2);
+   return new Color("#" + toHex(r) + toHex(g) + toHex(b));
 }`;
 
             // Create hidden textarea to copy content (works better in iframes/webviews than navigator.clipboard)

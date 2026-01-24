@@ -1,10 +1,11 @@
-// Gebetsteiten.live Widget
+// Prayer Times Widget
+// Generated Code
 
-// --- STANDARD KONFIGURATION ---
 const DEFAULT = {
   city: "Berlin",
   country: "Germany",
-  method: 3
+  method: 3,
+  school: 1
 };
 
 // --- FARBPALETTE ---
@@ -37,25 +38,37 @@ let cityParam = DEFAULT.city;
 
 if (args.widgetParameter) {
   const params = args.widgetParameter.split(",");
-  
   if (params[0] && params[0].trim() !== "") {
     cityParam = params[0].trim();
   }
   
-  if (params.length > 1) {
-    const colorName = params[1].trim().toLowerCase();
-    if (COLORS[colorName]) {
-      THEME_COLOR_HEX = COLORS[colorName];
-    } else if (colorName.startsWith("#")) {
-       THEME_COLOR_HEX = colorName;
+  let methodFound = false;
+
+  for (let i = 1; i < params.length; i++) {
+    let p = params[i].trim();
+    if (p === "") continue;
+
+    if (!isNaN(p)) {
+      if (!methodFound) {
+        DEFAULT.method = parseInt(p);
+        methodFound = true;
+      } else {
+        DEFAULT.school = parseInt(p);
+      }
+      continue;
+    }
+
+    let lowerC = p.toLowerCase();
+    if (COLORS[lowerC]) {
+      THEME_COLOR_HEX = COLORS[lowerC];
+    } else if (lowerC.startsWith("#")) {
+      THEME_COLOR_HEX = lowerC;
     }
   }
 }
 
 // Colors
 const THEME_COLOR = new Color(THEME_COLOR_HEX);
-// SAFE Darkening Logic using Hex String Reconstruction
-// Avoids "expected string but got number" error in some versions
 const BG_TOP = getDarkVariant(THEME_COLOR_HEX, 0.2); 
 const BG_BOT = getDarkVariant(THEME_COLOR_HEX, 0.1); 
 
@@ -98,6 +111,12 @@ try {
   
   if (family === 'small') {
       renderSmall(widget, next, timings);
+  } else if (family === 'accessoryRectangular') {
+      // Lockscreen Rechteck
+      renderRectangular(widget, next, timings);
+  } else if (family === 'accessoryCircular') {
+      // Lockscreen Rund
+      renderCircular(widget, next);
   } else {
       renderMedium(widget, next, timings, hijri, cityParam);
   }
@@ -121,6 +140,75 @@ if (config.runsInApp) {
 
 // --- RENDER FUNCTIONS ---
 
+// 1. LOCKSCREEN RECTANGULAR
+function renderRectangular(w, next, timings) {
+    const stack = w.addStack();
+    stack.layoutHorizontally();
+    stack.centerAlignContent();
+
+    // Left: Big Next Time
+    const left = stack.addStack();
+    left.layoutVertically();
+    left.centerAlignContent();
+
+    const lbl = left.addText(mapName(next.name).toUpperCase());
+    lbl.font = Font.boldSystemFont(9);
+    lbl.textColor = Color.white();
+
+    const time = left.addText(next.time);
+    time.font = Font.boldSystemFont(22);
+    time.textColor = Color.white();
+
+    stack.addSpacer();
+
+    // Right: List (Very small)
+    const right = stack.addStack();
+    right.layoutVertically();
+
+    const prayers = ['Fajr', 'Dhuhr', 'Asr', 'Maghrib', 'Isha'];
+    for(let p of prayers) {
+        const row = right.addStack();
+        row.layoutHorizontally();
+
+        // Highlight active
+        const isActive = (p === next.name);
+        const f = isActive ? Font.boldSystemFont(8) : Font.systemFont(8);
+        // Dim inactive prayers heavily
+        const opacity = isActive ? 1 : 0.5;
+
+        const n = row.addText(mapName(p).substr(0, 3));
+        n.font = f;
+        n.textOpacity = opacity;
+        n.textColor = Color.white();
+
+        row.addSpacer(4);
+
+        const t = row.addText(timings[p].split(' ')[0]);
+        t.font = f;
+        t.textOpacity = opacity;
+        t.textColor = Color.white();
+    }
+}
+
+// 2. LOCKSCREEN CIRCULAR
+function renderCircular(w, next) {
+    const stack = w.addStack();
+    stack.layoutVertically();
+    stack.centerAlignContent();
+
+    const t = stack.addText(next.time);
+    t.font = Font.boldSystemFont(12);
+    t.minimumScaleFactor = 0.5;
+    t.textColor = Color.white();
+    t.centerAlignText();
+
+    const n = stack.addText(mapName(next.name));
+    n.font = Font.systemFont(8);
+    n.textColor = Color.white();
+    n.centerAlignText();
+}
+
+// 3. HOMESCREEN SMALL
 function renderSmall(w, next, timings) {
     w.setPadding(12, 12, 12, 12);
     
@@ -166,6 +254,7 @@ function renderSmall(w, next, timings) {
     }
 }
 
+// 4. HOMESCREEN MEDIUM
 function renderMedium(w, next, timings, hijri, cityName) {
   const headerStack = w.addStack();
   headerStack.layoutHorizontally();
@@ -223,8 +312,9 @@ async function fetchPrayerData(dateObj, city) {
   let c = encodeURI(String(city));
   let co = encodeURI(String(DEFAULT.country));
   let m = String(DEFAULT.method);
+  let s = String(DEFAULT.school);
   
-  const url = `https://api.aladhan.com/v1/timingsByCity/${dateStr}?city=${c}&country=${co}&method=${m}&school=1`;
+  const url = `https://api.aladhan.com/v1/timingsByCity/${dateStr}?city=${c}&country=${co}&method=${m}&school=${s}`;
   const req = new Request(url);
   return (await req.loadJSON()).data;
 }
