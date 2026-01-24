@@ -24,6 +24,7 @@
 
     <!-- PWA / Mobile Optimization -->
     <meta name="theme-color" content="#0f172a"> <!-- Dunkles Blau passend zum Header -->
+    <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Gebetszeiten">
@@ -1701,64 +1702,6 @@ function getDarkVariant(hex, factor) {
    return new Color("#" + toHex(r) + toHex(g) + toHex(b));
 }
 `;
-
-  let c = encodeURI(String(city));
-  let co = encodeURI(String(DEFAULT.country));
-  let m = String(DEFAULT.method);
-  let s = String(DEFAULT.school);
-
-  const url = \`https://api.aladhan.com/v1/timingsByCity/\${dateStr}?city=\${c}&country=\${co}&method=\${m}&school=\${s}\`;
-  const req = new Request(url);
-  return (await req.loadJSON()).data;
-}
-
-function getNextPrayerToday(timings) {
-  const now = new Date();
-  const currentMins = now.getHours() * 60 + now.getMinutes();
-  const order = ['Fajr', 'Sunrise', 'Dhuhr', 'Asr', 'Maghrib', 'Isha'];
-  for (let name of order) {
-    const timeStr = timings[name].split(' ')[0];
-    const [h, m] = timeStr.split(':').map(Number);
-    const mins = h * 60 + m;
-    if (mins > currentMins) return { name: name, time: timeStr };
-  }
-  return { name: 'Fajr', time: timings['Fajr'].split(' ')[0] };
-}
-
-function addPrayerItem(stack, name, time, isActive) {
-  const itemStack = stack.addStack();
-  itemStack.layoutVertically();
-  itemStack.centerAlignContent();
-
-  const nameTxt = itemStack.addText(mapName(name));
-  nameTxt.font = isActive ? Font.boldSystemFont(9) : Font.systemFont(9);
-  nameTxt.textColor = isActive ? THEME_COLOR : new Color("#888888");
-  nameTxt.centerAlignText();
-  itemStack.addSpacer(2);
-  const timeStack = itemStack.addStack();
-  if (isActive) {
-    timeStack.backgroundColor = new Color("#ffffff", 0.15);
-    timeStack.cornerRadius = 4;
-    timeStack.setPadding(2, 4, 2, 4);
-  }
-  const timeTxt = timeStack.addText(time);
-  timeTxt.font = isActive ? Font.boldSystemFont(11) : Font.mediumSystemFont(11);
-  timeTxt.textColor = isActive ? Color.white() : new Color("#cccccc");
-}
-
-function mapName(key) {
-  const map = { "Fajr": "Fajr", "Sunrise": "Shuruk", "Dhuhr": "Dhuhr", "Asr": "Asr", "Maghrib": "Maghrib", "Isha": "Isha" };
-  return map[key] || key;
-}
-
-function getDarkVariant(hex, factor) {
-   let c = new Color(hex);
-   let r = Math.floor(c.red * factor * 255);
-   let g = Math.floor(c.green * factor * 255);
-   let b = Math.floor(c.blue * factor * 255);
-   let toHex = (n) => ("0" + n.toString(16)).slice(-2);
-   return new Color("#" + toHex(r) + toHex(g) + toHex(b));
-}`;
 
             // Create hidden textarea to copy content (works better in iframes/webviews than navigator.clipboard)
             const el = document.createElement('textarea');
