@@ -82,8 +82,12 @@ widget.backgroundGradient = gradient;
 try {
   let now = new Date();
   let data = await fetchPrayerData(now, cityParam);
-  let timings = data.timings;
   
+  // 1. Prepare Rectangular Data (Current + 2)
+  let rectList = await getRectangularSequence(now, cityParam, data);
+
+  // 2. Prepare Standard Data (Next Prayer)
+  let timings = data.timings;
   const ishaStr = timings['Isha'].split(' ')[0];
   const [h, m] = ishaStr.split(':').map(Number);
   const ishaDate = new Date(now);
@@ -113,7 +117,7 @@ try {
       renderSmall(widget, next, timings);
   } else if (family === 'accessoryRectangular') {
       // Lockscreen Rechteck
-      renderRectangular(widget, next, timings);
+      renderRectangular(widget, rectList);
   } else if (family === 'accessoryCircular') {
       // Lockscreen Rund
       renderCircular(widget, next);
@@ -141,52 +145,41 @@ if (config.runsInApp) {
 // --- RENDER FUNCTIONS ---
 
 // 1. LOCKSCREEN RECTANGULAR
-function renderRectangular(w, next, timings) {
-    const stack = w.addStack();
-    stack.layoutHorizontally();
-    stack.centerAlignContent();
+function renderRectangular(w, list) {
+    // List contains 3 items: {name, time, icon}
 
-    // Left: Big Next Time
-    const left = stack.addStack();
-    left.layoutVertically();
-    left.centerAlignContent();
+    // Use a vertical stack for 3 rows
+    const mainStack = w.addStack();
+    mainStack.layoutVertically();
+    mainStack.centerAlignContent(); // Vertically center in the widget
 
-    const lbl = left.addText(mapName(next.name).toUpperCase());
-    lbl.font = Font.boldSystemFont(9);
-    lbl.textColor = Color.white();
-
-    const time = left.addText(next.time);
-    time.font = Font.boldSystemFont(22);
-    time.textColor = Color.white();
-
-    stack.addSpacer();
-
-    // Right: List (Very small)
-    const right = stack.addStack();
-    right.layoutVertically();
-
-    const prayers = ['Fajr', 'Dhuhr', 'Asr', 'Maghrib', 'Isha'];
-    for(let p of prayers) {
-        const row = right.addStack();
+    for (let item of list) {
+        const row = mainStack.addStack();
         row.layoutHorizontally();
+        row.centerAlignContent(); // Align icon and text vertically
 
-        // Highlight active
-        const isActive = (p === next.name);
-        const f = isActive ? Font.boldSystemFont(8) : Font.systemFont(8);
-        // Dim inactive prayers heavily
-        const opacity = isActive ? 1 : 0.5;
+        // Icon
+        const iconSym = SFSymbol.named(item.icon);
+        const iconImg = row.addImage(iconSym.image);
+        iconImg.imageSize = new Size(12, 12);
+        iconImg.tintColor = Color.white();
 
-        const n = row.addText(mapName(p).substr(0, 3));
-        n.font = f;
-        n.textOpacity = opacity;
-        n.textColor = Color.white();
+        row.addSpacer(6);
 
-        row.addSpacer(4);
+        // Name
+        const nameTxt = row.addText(mapName(item.name));
+        nameTxt.font = Font.systemFont(13);
+        nameTxt.textColor = Color.white();
 
-        const t = row.addText(timings[p].split(' ')[0]);
-        t.font = f;
-        t.textOpacity = opacity;
-        t.textColor = Color.white();
+        row.addSpacer(); // Push time to the right
+
+        // Time
+        const timeTxt = row.addText(item.time);
+        timeTxt.font = Font.monospacedSystemFont(13); // Monospace for alignment
+        timeTxt.textColor = new Color("#ffffff", 0.8);
+
+        // Add minimal spacing between rows
+        mainStack.addSpacer(2);
     }
 }
 
@@ -317,6 +310,68 @@ async function fetchPrayerData(dateObj, city) {
   const url = `https://api.aladhan.com/v1/timingsByCity/${dateStr}?city=${c}&country=${co}&method=${m}&school=${s}`;
   const req = new Request(url);
   return (await req.loadJSON()).data;
+}
+
+async function getRectangularSequence(now, city, todayData) {
+   const order = ['Fajr', 'Sunrise', 'Dhuhr', 'Asr', 'Maghrib', 'Isha'];
+   let timings = todayData.timings;
+   let nowMins = now.getHours() * 60 + now.getMinutes();
+
+   function getMins(t) { return parseInt(t.split(':')[0])*60 + parseInt(t.split(':')[1]); }
+
+   let idx = -1;
+   for(let i=0; i<order.length; i++) {
+       if (nowMins >= getMins(timings[order[i]].split(' ')[0])) {
+           idx = i;
+       }
+   }
+
+   let result = [];
+
+   // Current
+   if (idx === -1) {
+       let yDate = new Date(now);
+       yDate.setDate(now.getDate() - 1);
+       let yData = await fetchPrayerData(yDate, city);
+       result.push({ name: 'Isha', time: yData.timings['Isha'].split(' ')[0], icon: 'moon.stars.fill' });
+   } else {
+       result.push({ name: order[idx], time: timings[order[idx]].split(' ')[0], icon: getIcon(order[idx]) });
+   }
+
+   // +1
+   if (idx + 1 < order.length) {
+        result.push({ name: order[idx+1], time: timings[order[idx+1]].split(' ')[0], icon: getIcon(order[idx+1]) });
+   } else {
+        let tDate = new Date(now);
+        tDate.setDate(now.getDate() + 1);
+        let tData = await fetchPrayerData(tDate, city);
+        result.push({ name: order[0], time: tData.timings[order[0]].split(' ')[0], icon: getIcon(order[0]) });
+   }
+
+   // +2
+   if (idx + 2 < order.length) {
+        result.push({ name: order[idx+2], time: timings[order[idx+2]].split(' ')[0], icon: getIcon(order[idx+2]) });
+   } else {
+        let tIdx = (idx + 2) - order.length;
+        let tDate = new Date(now);
+        tDate.setDate(now.getDate() + 1);
+        let tData = await fetchPrayerData(tDate, city);
+        result.push({ name: order[tIdx], time: tData.timings[order[tIdx]].split(' ')[0], icon: getIcon(order[tIdx]) });
+   }
+
+   return result;
+}
+
+function getIcon(name) {
+   const map = {
+       Fajr: 'sunrise.fill',
+       Sunrise: 'sun.haze.fill',
+       Dhuhr: 'sun.max.fill',
+       Asr: 'sun.min.fill',
+       Maghrib: 'sunset.fill',
+       Isha: 'moon.stars.fill'
+   };
+   return map[name] || 'clock';
 }
 
 function getNextPrayerToday(timings) {
