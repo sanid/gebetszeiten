@@ -175,7 +175,7 @@ function renderRectangular(w, list) {
 
         // Time
         const timeTxt = row.addText(item.time);
-        timeTxt.font = Font.monospacedSystemFont(13); // Monospace for alignment
+        timeTxt.font = new Font("Menlo", 13); // Monospace for alignment
         timeTxt.textColor = new Color("#ffffff", 0.8);
 
         // Add minimal spacing between rows
